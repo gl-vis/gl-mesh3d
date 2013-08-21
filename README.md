@@ -33,7 +33,7 @@ shell.on("gl-render", function() {
 })
 ```
 
-Try out the example in your browser
+[Try out the example in your browser](http://mikolalysenko.github.io/gl-simplicial-complex/)
 
 Install
 =======

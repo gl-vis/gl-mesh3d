@@ -1,0 +1,40 @@
+{
+  "name": "gl-simplicial-complex",
+  "version": "0.0.0",
+  "description": "Draws a simplicial complex in WebGL",
+  "main": "mesh.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "gl-buffer": "~0.1.1",
+    "gl-matrix": "~2.0.0",
+    "gl-shader": "~0.0.6",
+    "gl-vao": "~0.0.2",
+    "normals": "~0.1.0"
+  },
+  "devDependencies": {
+    "bunny": "~1.0.0",
+    "game-shell-orbit-camera": "~0.0.0",
+    "gl-now": "~0.0.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mikolalysenko/gl-simplicial-complex.git"
+  },
+  "keywords": [
+    "webgl",
+    "simplicial",
+    "complex",
+    "debug",
+    "simple"
+  ],
+  "author": "Mikola Lysenko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mikolalysenko/gl-simplicial-complex/issues"
+  }
+}
