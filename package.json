@@ -1,16 +1,16 @@
 {
   "name": "gl-simplicial-complex",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Draws a simplicial complex in WebGL",
   "main": "mesh.js",
   "directories": {
     "example": "example"
   },
   "dependencies": {
-    "gl-buffer": "~0.1.1",
+    "gl-buffer": "~0.1.2",
     "gl-matrix": "~2.0.0",
-    "gl-shader": "~0.0.6",
-    "gl-vao": "~0.0.2",
+    "gl-shader": "~3.0.0",
+    "gl-vao": "~1.0.0",
     "normals": "~0.1.0"
   },
   "devDependencies": {

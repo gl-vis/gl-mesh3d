@@ -191,7 +191,7 @@ SimplicialMesh.prototype.draw = function(params) {
     shader.uniforms.view = view
     shader.uniforms.projection = projection
     this.edgeVAO.bind()
-    gl.drawArrays(gl.LINES, 0, this.edgeCount*3)
+    gl.drawArrays(gl.LINES, 0, this.edgeCount*2)
     this.edgeVAO.unbind()
   }
   
@@ -331,7 +331,7 @@ function createSimplicialMesh(gl, params) {
   var trianglePositions = createBuffer(gl, [])
   var triangleColors = createBuffer(gl, [])
   var triangleNormals = createBuffer(gl, [])
-  var triangleVAO = createVAO(gl, null, [
+  var triangleVAO = createVAO(gl, [
     { buffer: trianglePositions,
       type: gl.FLOAT,
       size: 3
@@ -348,7 +348,7 @@ function createSimplicialMesh(gl, params) {
   
   var edgePositions = createBuffer(gl, [])
   var edgeColors = createBuffer(gl, [])
-  var edgeVAO = createVAO(gl, null, [
+  var edgeVAO = createVAO(gl, [
     { buffer: edgePositions,
       type: gl.FLOAT,
       size: 3
@@ -362,7 +362,7 @@ function createSimplicialMesh(gl, params) {
   var pointPositions = createBuffer(gl, [])
   var pointColors = createBuffer(gl, [])
   var pointSizes = createBuffer(gl, [])
-  var pointVAO = createVAO(gl, null, [
+  var pointVAO = createVAO(gl, [
     { buffer: pointPositions,
       type: gl.FLOAT,
       size: 3
