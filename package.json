@@ -1,17 +1,17 @@
 {
   "name": "gl-simplicial-complex",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Draws a simplicial complex in WebGL",
   "main": "mesh.js",
   "directories": {
     "example": "example"
   },
   "dependencies": {
-    "gl-buffer": "~0.1.2",
-    "gl-matrix": "~2.0.0",
-    "gl-shader": "~3.0.0",
-    "gl-vao": "~1.0.0",
-    "normals": "~0.1.0"
+    "gl-buffer": "^0.1.2",
+    "gl-matrix": "^2.0.0",
+    "gl-vao": "^1.0.0",
+    "normals": "^0.1.0",
+    "glslify": "^1.1.0"
   },
   "devDependencies": {
     "bunny": "~1.0.0",
@@ -32,6 +32,11 @@
     "debug",
     "simple"
   ],
+  "browserify": {
+    "transform": [ 
+      "glslify"
+    ]
+  },
   "author": "Mikola Lysenko",
   "license": "MIT",
   "bugs": {

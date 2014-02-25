@@ -2,10 +2,24 @@
 
 var createBuffer = require("gl-buffer")
 var createVAO = require("gl-vao")
-var createShader = require("gl-shader")
+var glslify = require("glslify")
 var glm = require("gl-matrix")
 var normals = require("normals")
 var mat4 = glm.mat4
+
+var createMeshShaderGLSLify = glslify({
+  vertex: "./lib/triangle-vertex.glsl", 
+  fragment: "./lib/triangle-fragment.glsl"
+})
+var createWireShaderGLSLify = glslify({
+  vertex: "./lib/edge-vertex.glsl",
+  fragment: "./lib/edge-fragment.glsl"
+})
+var createPointShaderGLSLify = glslify({
+  vertex: "./lib/point-vertex.glsl",
+  fragment: "./lib/point-fragment.glsl"
+})
+
 
 var identityMatrix = mat4.identity(mat4.create())
 
@@ -222,47 +236,7 @@ SimplicialMesh.prototype.dispose = function() {
 }
 
 function createMeshShader(gl) {
-  var shader = createShader(gl,
-    "attribute vec3 position;\
-    attribute vec3 color;\
-    attribute vec3 normal;\
-    uniform mat4 model;\
-    uniform mat4 modelInverseTranspose;\
-    uniform mat4 view;\
-    uniform vec3 eyePosition;\
-    uniform mat4 projection;\
-    varying vec3 f_position;\
-    varying vec3 f_color;\
-    varying vec3 f_normal;\
-    varying vec3 viewDirection;\
-    void main() {\
-      vec4 m_position = model * vec4(position, 1.0);\
-      vec4 t_position = view * m_position;\
-      gl_Position = projection * t_position;\
-      f_color = color;\
-      f_normal = normalize((modelInverseTranspose * vec4(normal, 0.0)).xyz);\
-      f_position = m_position.xyz/m_position.w;\
-      viewDirection = eyePosition - f_position;\
-    }",
-    "precision highp float;\
-    uniform vec3 lightPosition;\
-    uniform vec3 ambient;\
-    uniform vec3 diffuse;\
-    uniform vec3 specular;\
-    uniform float specularExponent;\
-    varying vec3 f_position;\
-    varying vec3 f_color;\
-    varying vec3 f_normal;\
-    varying vec3 viewDirection;\
-    void main() {\
-      vec3 lightDirection = normalize(lightPosition - f_position);\
-      vec3 normal = normalize(f_normal);\
-      float diffuseIntensity = clamp(dot(normal, lightDirection), 0.0, 1.0);\
-      vec3 halfView = normalize(lightDirection + normalize(viewDirection));\
-      float specularIntensity = pow(clamp(dot(normal, halfView),0.0,1.0), specularExponent);\
-      gl_FragColor = vec4(f_color * (ambient + diffuse * diffuseIntensity) + specular * specularIntensity, 1.0); \
-    }"
-  )
+  var shader = createMeshShaderGLSLify(gl)
   shader.attributes.position.location = 0
   shader.attributes.color.location = 1
   shader.attributes.normal.location = 2
@@ -270,47 +244,14 @@ function createMeshShader(gl) {
 }
 
 function createWireShader(gl) {
-  var shader = createShader(gl,
-    "attribute vec3 position;\
-    attribute vec3 color;\
-    uniform mat4 model;\
-    uniform mat4 view;\
-    uniform mat4 projection;\
-    varying vec3 f_color;\
-    void main() {\
-      gl_Position = projection * view * model * vec4(position, 1.0);\
-      f_color = color;\
-    }",
-    "precision highp float;\
-    varying vec3 f_color;\
-    void main() {\
-      gl_FragColor = vec4(f_color, 1.0);\
-    }"
-  )
+  var shader = createWireShaderGLSLify(gl)
   shader.attributes.position.location = 0
   shader.attributes.color.location = 1
   return shader
 }
 
 function createPointShader(gl) {
-  var shader = createShader(gl,
-    "attribute vec3 position;\
-    attribute vec3 color;\
-    attribute float pointSize;\
-    uniform mat4 model;\
-    uniform mat4 view;\
-    uniform mat4 projection;\
-    varying vec3 f_color;\
-    void main() {\
-      gl_Position = projection * view * model * vec4(position, 1.0);\
-      f_color = color;\
-      gl_PointSize = pointSize;\
-    }",
-    "precision highp float;\
-    varying vec3 f_color;\
-    void main() {\
-      gl_FragColor = vec4(f_color, 1.0);\
-    }")
+  var shader = createPointShaderGLSLify(gl)
   shader.attributes.position.location = 0
   shader.attributes.color.location = 1
   shader.attributes.pointSize.location = 2
