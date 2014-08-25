@@ -84,6 +84,18 @@ Updates the contents of the simplicial complex in place.
 
 * `params` is a list of parameters which are in the same format as `createSimplicialComplex`
 
+### `mesh.drawPick(params)`
+Draws the mesh for the purposes of point picking and selection.
+
+### `mesh.pick(pickData)`
+Using the output from gl-select finds the point on the mesh closest to the given pick data.
+
+**Returns** An object with the following properties:
+
+* `positions` the position of the picked point on the mesh
+* `cellId`  the index of the closest cell
+* `cell` the cell of the closest point
+
 ### `mesh.dispose()`
 Destroys the mesh object and releases all resources assigned to it.
 
