@@ -1,70 +1,121 @@
-"use strict"
+'use strict'
 
-var createBuffer = require("gl-buffer")
-var createVAO = require("gl-vao")
-var glslify = require("glslify")
-var glm = require("gl-matrix")
-var normals = require("normals")
-var mat4 = glm.mat4
+var createBuffer  = require('gl-buffer')
+var createVAO     = require('gl-vao')
+var glslify       = require('glslify')
+var normals       = require('normals')
+var mat4          = require('gl-mat4')
+var closestPoint  = require('./lib/closest-point')
 
 var createMeshShaderGLSLify = glslify({
-  vertex: "./lib/triangle-vertex.glsl", 
-  fragment: "./lib/triangle-fragment.glsl"
+  vertex:   './lib/triangle-vertex.glsl', 
+  fragment: './lib/triangle-fragment.glsl'
 })
 var createWireShaderGLSLify = glslify({
-  vertex: "./lib/edge-vertex.glsl",
-  fragment: "./lib/edge-fragment.glsl"
+  vertex:   './lib/edge-vertex.glsl',
+  fragment: './lib/edge-fragment.glsl'
 })
 var createPointShaderGLSLify = glslify({
-  vertex: "./lib/point-vertex.glsl",
-  fragment: "./lib/point-fragment.glsl"
+  vertex:   './lib/point-vertex.glsl',
+  fragment: './lib/point-fragment.glsl'
 })
-
+var createPickShaderGLSLify = glslify({
+  vertex:   './lib/pick-vertex.glsl', 
+  fragment: './lib/pick-fragment.glsl'
+})
+var createPointPickShaderGLSLify = glslify({
+  vertex:   './lib/pick-point-vertex.glsl', 
+  fragment: './lib/pick-fragment.glsl'
+})
 
 var identityMatrix = mat4.identity(mat4.create())
 
 function SimplicialMesh(gl,
-  trianglePositions, triangleColors, triangleNormals, triangleVAO,
-  edgePositions, edgeColors, edgeVAO,
-  pointPositions, pointColors, pointSizes, pointVAO) {
+  triShader, lineShader, pointShader,
+  pickShader, pointPickShader,
+  trianglePositions, triangleColors, triangleNormals, triangleIds, triangleVAO,
+  edgePositions, edgeColors, edgeIds, edgeVAO,
+  pointPositions, pointColors, pointSizes, pointIds, pointVAO) {
   
   this.gl = gl
-  
+  this.cells     = []
+  this.positions = []
+
+  this.triShader         = triShader
+  this.lineShader        = lineShader
+  this.pointShader       = pointShader
+  this.pickShader        = pickShader
+  this.pointPickShader   = pointPickShader
+
   this.trianglePositions = trianglePositions
-  this.triangleColors = triangleColors
-  this.triangleNormals = triangleNormals
-  this.triangleVAO = triangleVAO
-  this.triangleCount = 0
+  this.triangleColors    = triangleColors
+  this.triangleNormals   = triangleNormals
+  this.triangleIds       = triangleIds
+  this.triangleVAO       = triangleVAO
+  this.triangleCount     = 0
   
-  this.edgePositions = edgePositions
-  this.edgeColors = edgeColors
-  this.edgeVAO = edgeVAO
-  this.edgeCount = 0
+  this.lineWidth         = 1
+  this.edgePositions     = edgePositions
+  this.edgeColors        = edgeColors
+  this.edgeIds           = edgeIds
+  this.edgeVAO           = edgeVAO
+  this.edgeCount         = 0
   
-  this.pointPositions = pointPositions
-  this.pointColors = pointColors
-  this.pointSizes = pointSizes
-  this.pointVAO = pointVAO
-  this.pointCount = 0
+  this.pointPositions    = pointPositions
+  this.pointColors       = pointColors
+  this.pointSizes        = pointSizes
+  this.pointIds          = pointIds
+  this.pointVAO          = pointVAO
+  this.pointCount        = 0
+
+  this.pickId       = 0
+  this.bounds       = [[Infinity,Infinity,Infinity], [-Infinity,-Infinity,-Infinity]]
+  this.clipBounds   = [[-Infinity,-Infinity,-Infinity], [Infinity,Infinity,Infinity]]
+
+  this._model       = identityMatrix
+  this._view        = identityMatrix
+  this._projection  = identityMatrix
+  this._resolution  = [1,1]
 }
 
-SimplicialMesh.prototype.update = function(params) {
+var proto = SimplicialMesh.prototype
+
+proto.update = function(params) {
   params = params || {}
   var gl = this.gl
   
   var cells = params.cells
   var positions = params.positions
 
-  //Data for buffers
+  //Buffer data
   var tPos = []
   var tCol = []
   var tNor = []
+  var tIds = []
+
   var ePos = []
   var eCol = []
+  var eIds = []
+
   var pPos = []
   var pCol = []
   var pSiz = []
-  
+  var pIds = []
+
+  if('clipBounds' in params) {
+    this.clipBounds = params.clipBounds
+  }
+  if('pickId' in params) {
+    this.pickId = params.pickId
+  }
+  if('lineWidth' in params) {
+    this.lineWidth = params.lineWidth
+  }
+
+  //Save geometry data for picking calculations
+  this.cells     = cells
+  this.positions = positions
+
   //Compute normals
   var vertexNormals = params.vertexNormals
   var cellNormals = params.cellNormals
@@ -79,72 +130,121 @@ SimplicialMesh.prototype.update = function(params) {
   var vertexColors = params.vertexColors
   var cellColors = params.cellColors
   var meshColor = params.meshColor || [0.7, 0.5, 0.2]
-  if(meshColor.length !== 3) {
-    throw new Error("bad mesh color")
-  }
   
   //Point size
   var pointSizes = params.pointSizes
   var meshPointSize = params.pointSize || 1.0
-  
+
+  //Build id buffers buffers
+  var cellCount   = 0
+
+  //Update bounds
+  this.bounds       = [[Infinity,Infinity,Infinity], [-Infinity,-Infinity,-Infinity]]
+  for(var i=0; i<positions.length; ++i) {
+    for(var j=0; j<3; ++j) {
+      this.bounds[0][j] = Math.min(this.bounds[0][j], positions[i][j])
+      this.bounds[1][j] = Math.max(this.bounds[1][j], positions[i][j])
+    }
+  }
+
   //Pack cells into buffers
   var triangleCount = 0
   var edgeCount = 0
   var pointCount = 0
   for(var i=0; i<cells.length; ++i) {
-    var c = cells[i]
-    var n = cells[i].length
-    switch(n) {
+    var cell = cells[i]
+    switch(cell.length) {
       case 1:
         ++pointCount
-        pPos.push.apply(pPos, positions[c[0]])
+
+        var v = cell[0]
+
+        var p = positions[v]
+        pPos.push(p[0], p[1], p[2])
+
+        var c
         if(vertexColors) {
-          pCol.push.apply(pCol, vertexColors[c[0]])
+          c = vertexColors[v]
         } else if(cellColors) {
-          pCol.push.apply(pCol, cellColors[i])
+          c = cellColors[i]
         } else {
-          pCol.push.apply(pCol, meshColor)
+          c = meshColor
         }
+        if(c.length === 3) {
+          pCol.push(c[0], c[1], c[2], 1)
+        } else {
+          pCol.push(c[0], c[1], c[2], c[3])
+        }
+
         if(pointSizes) {
-          pSiz.push(pointSizes[c[0]])
+          pSiz.push(pointSizes[v])
         } else {
           pSiz.push(meshPointSize)
         }
+
+        pIds.push(cellCount++)
       break
       
       case 2:
         ++edgeCount
         for(var j=0; j<2; ++j) {
-          var v = c[j]
-          ePos.push.apply(ePos, positions[v])
+          var v = cell[j]
+
+          var p = positions[v]
+          ePos.push(p[0], p[1], p[2])
+
+          var c
           if(vertexColors) {
-            eCol.push.apply(eCol, vertexColors[v])
+            c = vertexColors[v]
           } else if(cellColors) {
-            eCol.push.apply(eCol, cellColors[i])
+            c = cellColors[i]
           } else {
-            eCol.push.apply(eCol, meshColor)
+            c = meshColor
           }
+          if(c.length === 3) {
+            eCol.push(c[0], c[1], c[2], 1)
+          } else {
+            eCol.push(c[0], c[1], c[2], c[3])
+          }
+
+          eIds.push(cellCount)
         }
+        cellCount += 1
       break
       
       case 3:
         ++triangleCount
         for(var j=0; j<3; ++j) {
-          var v = c[j]
-          tPos.push.apply(tPos, positions[v])
+          var v = cell[j]
+
+          var p = positions[v]
+          tPos.push(p[0], p[1], p[2])
+
+          var c
           if(vertexColors) { 
-            tCol.push.apply(tCol, vertexColors[v])
+            c = vertexColors[v]
           } else if(cellColors) {
-            tCol.push.apply(tCol, cellColors[i])
+            c = cellColors[i]
           } else {
-            tCol.push.apply(tCol, meshColor)
+            c = meshColor
           }
+          if(c.length === 3) {
+            tCol.push(c[0], c[1], c[2], 1)
+          } else {
+            tCol.push(c[0], c[1], c[2], c[3])
+          }
+
+          var q
           if(vertexNormals) {
-            tNor.push.apply(tNor, vertexNormals[v])
+            q = vertexNormals[v]
           } else {
-            tNor.push.apply(tNor, cellNormals[i])
+            q = cellNormals[i]
           }
+          tNor.push(q[0], q[1], q[2])
+
+          tIds.push(cellCount)
         }
+        cellCount += 1
       break
       
       default:
@@ -152,7 +252,7 @@ SimplicialMesh.prototype.update = function(params) {
       break
     }
   }
-  
+
   this.pointCount = pointCount
   this.edgeCount = edgeCount
   this.triangleCount = triangleCount
@@ -161,22 +261,34 @@ SimplicialMesh.prototype.update = function(params) {
   this.pointPositions.update(pPos)
   this.pointColors.update(pCol)
   this.pointSizes.update(pSiz)
+  this.pointIds.update(new Uint32Array(pIds))
+
   this.edgePositions.update(ePos)
   this.edgeColors.update(eCol)
+  this.edgeIds.update(new Uint32Array(eIds))
+  
   this.trianglePositions.update(tPos)
   this.triangleColors.update(tCol)
   this.triangleNormals.update(tNor)
+  this.triangleIds.update(new Uint32Array(tIds))
+  
 }
 
-SimplicialMesh.prototype.draw = function(params) {
+proto.draw = function(params) {
   params = params || {}
   var gl = this.gl
   var model = params.model || identityMatrix
   var view = params.view || identityMatrix
   var projection = params.projection || identityMatrix
+
+  var clipBounds = [[-1e6,-1e6,-1e6],[1e6,1e6,1e6]]
+  for(var i=0; i<3; ++i) {
+    clipBounds[0][i] = Math.max(clipBounds[0][i], this.clipBounds[0][i])
+    clipBounds[1][i] = Math.min(clipBounds[1][i], this.clipBounds[1][i])
+  }
   
   if(this.triangleCount > 0) {
-    var shader = gl.__SIMPLICIAL_MESH_SHADER
+    var shader = this.triShader
     shader.bind()
     shader.uniforms.model = model
     shader.uniforms.view = view
@@ -189,6 +301,7 @@ SimplicialMesh.prototype.draw = function(params) {
     shader.uniforms.specular = params.specular || [1.0, 1.0, 1.0]
     shader.uniforms.specularExponent = params.specularExponent || 10.0
     shader.uniforms.eyePosition = [eyePosition[12], eyePosition[13], eyePosition[14]]
+    shader.uniforms.clipBounds = clipBounds
     
     var m = mat4.create()
     shader.uniforms.modelInverseTranspose = mat4.transpose(m, mat4.invert(m, model))
@@ -199,47 +312,156 @@ SimplicialMesh.prototype.draw = function(params) {
   }
   
   if(this.edgeCount > 0) {
-    var shader = gl.__SIMPLICIAL_WIRE_SHADER
+    var shader = this.lineShader
     shader.bind()
     shader.uniforms.model = model
     shader.uniforms.view = view
     shader.uniforms.projection = projection
+    shader.uniforms.clipBounds = clipBounds
+
     this.edgeVAO.bind()
+    gl.lineWidth(this.lineWidth)
     gl.drawArrays(gl.LINES, 0, this.edgeCount*2)
     this.edgeVAO.unbind()
   }
   
   if(this.pointCount > 0) {
-    var shader = gl.__SIMPLICIAL_POINT_SHADER
+    var shader = this.pointShader
     shader.bind()
     shader.uniforms.model = model
     shader.uniforms.view = view
     shader.uniforms.projection = projection
+    shader.uniforms.clipBounds = clipBounds
+
     this.pointVAO.bind()
     gl.drawArrays(gl.POINTS, 0, this.pointCount)
     this.pointVAO.unbind()
   }
 }
 
-SimplicialMesh.prototype.dispose = function() {
+
+proto.drawPick = function(params) {
+  params = params || {}
+  var gl         = this.gl
+  var model      = params.model || identityMatrix
+  var view       = params.view || identityMatrix
+  var projection = params.projection || identityMatrix
+  var clipBounds = [[-1e6,-1e6,-1e6],[1e6,1e6,1e6]]
+  for(var i=0; i<3; ++i) {
+    clipBounds[0][i] = Math.max(clipBounds[0][i], this.clipBounds[0][i])
+    clipBounds[1][i] = Math.min(clipBounds[1][i], this.clipBounds[1][i])
+  }
+
+  //Save camera parameters
+  this._model      = [].slice.call(model)
+  this._view       = [].slice.call(view)
+  this._projection = [].slice.call(projection)
+  this._resolution = [gl.drawingBufferWidth, gl.drawingBufferHeight]
+
+  var shader = this.pickShader
+  shader.bind()
+
+  var uniforms = shader.uniforms
+  uniforms.model      = model
+  uniforms.view       = view
+  uniforms.projection = projection
+  uniforms.pickId     = this.pickId/255.0
+  uniforms.clipBounds = clipBounds
+
+  if(this.triangleCount > 0) {
+    this.triangleVAO.bind()
+    gl.drawArrays(gl.TRIANGLES, 0, this.triangleCount*3)
+    this.triangleVAO.unbind()
+  }
+  
+  if(this.edgeCount > 0) {
+    this.edgeVAO.bind()
+    gl.lineWidth(this.lineWidth)
+    gl.drawArrays(gl.LINES, 0, this.edgeCount*2)
+    this.edgeVAO.unbind()
+  }
+  
+  if(this.pointCount > 0) {
+    var shader = this.pointShader
+    shader.bind()
+    var uniforms = shader.uniforms
+    uniforms.model      = model
+    uniforms.view       = view
+    uniforms.projection = projection
+    uniforms.pickId     = this.pickId/255.0
+    uniforms.clipBounds = clipBounds
+
+    this.pointVAO.bind()
+    gl.drawArrays(gl.POINTS, 0, this.pointCount)
+    this.pointVAO.unbind()
+  }
+}
+
+
+proto.pick = function(pickData) {
+  if(!pickData) {
+    return null
+  }
+  if(pickData.id !== this.pickId) {
+    return null
+  }
+
+  var cellId    = pickData.value[0] + 256*pickData.value[1] + 65536*pickData.value[2]
+  var cell      = this.cells[cellId]
+  var positions = this.positions
+
+  var simplex   = new Array(cell.length)
+  for(var i=0; i<cell.length; ++i) {
+    simplex[i] = positions[cell[i]]
+  }
+
+  var position = closestPoint(
+    simplex, 
+    pickData.coord, 
+    this._model, 
+    this._view, 
+    this._projection, 
+    this._resolution)
+
+  return {
+    position: position,
+    cell:     cell,
+    cellId:   cellId
+  }
+}
+
+
+proto.dispose = function() {
+  this.triShader.dispose()
+  this.lineShader.dispose()
+  this.pointShader.dispose()
+  this.pickShader.dispose()
+  this.pointPickShader.dispose()
+
   this.triangleVAO.dispose()
   this.edgeVAO.dispose()
   this.pointVAO.dispose()
+
   this.trianglePositions.dispose()
   this.triangleColors.dispose()
   this.triangleNormals.dispose()
+  this.triangleIds.dispose()
+
   this.edgePositions.dispose()
   this.edgeColors.dispose()
+  this.edgeIds.dispose()
+
   this.pointPositions.dispose()
   this.pointColors.dispose()
   this.pointSizes.dispose()
+  this.pointIds.dispose()
 }
 
 function createMeshShader(gl) {
   var shader = createMeshShaderGLSLify(gl)
   shader.attributes.position.location = 0
   shader.attributes.color.location = 1
-  shader.attributes.normal.location = 2
+  shader.attributes.normal.location = 3
   return shader
 }
 
@@ -254,24 +476,35 @@ function createPointShader(gl) {
   var shader = createPointShaderGLSLify(gl)
   shader.attributes.position.location = 0
   shader.attributes.color.location = 1
-  shader.attributes.pointSize.location = 2
+  shader.attributes.pointSize.location = 3
+  return shader
+}
+
+function createPickShader(gl) {
+  var shader = createPickShaderGLSLify(gl)
+  shader.attributes.position.location = 0
+  shader.attributes.id.location = 2
+  return shader
+}
+
+function createPointPickShader(gl) {
+  var shader = createPointPickShaderGLSLify(gl)
+  shader.attributes.position.location = 0
+  shader.attributes.id.location = 2
   return shader
 }
 
 function createSimplicialMesh(gl, params) {
-  if(!gl.__SIMPLICIAL_MESH_SHADER) {
-    gl.__SIMPLICIAL_MESH_SHADER = createMeshShader(gl)
-  }
-  if(!gl.__SIMPLICIAL_WIRE_SHADER) {
-    gl.__SIMPLICIAL_WIRE_SHADER = createWireShader(gl)
-  }
-  if(!gl.__SIMPLICIAL_POINT_SHADER) {
-    gl.__SIMPLICIAL_POINT_SHADER = createPointShader(gl)
-  }
+  var triShader = createMeshShader(gl)
+  var lineShader = createWireShader(gl)
+  var pointShader = createPointShader(gl)
+  var pickShader      = createPickShader(gl)
+  var pointPickShader = createPointPickShader(gl)
   
-  var trianglePositions = createBuffer(gl, [])
-  var triangleColors = createBuffer(gl, [])
-  var triangleNormals = createBuffer(gl, [])
+  var trianglePositions = createBuffer(gl)
+  var triangleColors = createBuffer(gl)
+  var triangleNormals = createBuffer(gl)
+  var triangleIds = createBuffer(gl)
   var triangleVAO = createVAO(gl, [
     { buffer: trianglePositions,
       type: gl.FLOAT,
@@ -279,7 +512,12 @@ function createSimplicialMesh(gl, params) {
     },
     { buffer: triangleColors,
       type: gl.FLOAT,
-      size: 3
+      size: 4
+    },
+    { buffer: triangleIds,
+      type: gl.UNSIGNED_BYTE,
+      size: 4,
+      normalized: true
     },
     { buffer: triangleNormals,
       type: gl.FLOAT,
@@ -287,8 +525,9 @@ function createSimplicialMesh(gl, params) {
     }
   ])
   
-  var edgePositions = createBuffer(gl, [])
-  var edgeColors = createBuffer(gl, [])
+  var edgePositions = createBuffer(gl)
+  var edgeColors = createBuffer(gl)
+  var edgeIds = createBuffer(gl)
   var edgeVAO = createVAO(gl, [
     { buffer: edgePositions,
       type: gl.FLOAT,
@@ -296,13 +535,19 @@ function createSimplicialMesh(gl, params) {
     },
     { buffer: edgeColors,
       type: gl.FLOAT,
-      size: 3
+      size: 4
+    },
+    { buffer: edgeIds,
+      type: gl.UNSIGNED_BYTE,
+      size: 4,
+      normalized: true
     }
   ])
   
-  var pointPositions = createBuffer(gl, [])
-  var pointColors = createBuffer(gl, [])
-  var pointSizes = createBuffer(gl, [])
+  var pointPositions = createBuffer(gl)
+  var pointColors = createBuffer(gl)
+  var pointSizes = createBuffer(gl)
+  var pointIds = createBuffer(gl)
   var pointVAO = createVAO(gl, [
     { buffer: pointPositions,
       type: gl.FLOAT,
@@ -310,7 +555,12 @@ function createSimplicialMesh(gl, params) {
     },
     { buffer: pointColors,
       type: gl.FLOAT,
-      size: 3
+      size: 4
+    },
+    { buffer: pointIds,
+      type: gl.UNSIGNED_BYTE,
+      size: 4,
+      normalized: true
     },
     { buffer: pointSizes,
       type: gl.FLOAT,
@@ -319,9 +569,11 @@ function createSimplicialMesh(gl, params) {
   ])
   
   var mesh = new SimplicialMesh(gl,
-    trianglePositions, triangleColors, triangleNormals, triangleVAO,
-    edgePositions, edgeColors, edgeVAO,
-    pointPositions, pointColors, pointSizes, pointVAO)
+    triShader, lineShader, pointShader,
+    pickShader, pointPickShader,
+    trianglePositions, triangleColors, triangleNormals, triangleIds, triangleVAO,
+    edgePositions, edgeColors, edgeIds, edgeVAO,
+    pointPositions, pointColors, pointSizes, pointIds, pointVAO)
   
   mesh.update(params)
   

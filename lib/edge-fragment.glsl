@@ -1,5 +1,15 @@
-precision highp float;
-varying vec3 f_color;
+precision mediump float;
+
+uniform vec3 clipBounds[2];
+
+varying vec4 f_color;
+varying vec3 f_data;
+
 void main() {
-  gl_FragColor = vec4(f_color, 1.0);
+  if(any(lessThan(f_data, clipBounds[0])) || 
+     any(greaterThan(f_data, clipBounds[1]))) {
+    discard;
+  }
+
+  gl_FragColor = f_color;
 }
