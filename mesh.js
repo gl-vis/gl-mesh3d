@@ -423,6 +423,10 @@ proto.pick = function(pickData) {
     this._projection, 
     this._resolution)
 
+  if(!position) {
+    return null
+  }
+
   return {
     position: position,
     cell:     cell,
