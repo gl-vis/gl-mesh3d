@@ -415,20 +415,19 @@ proto.pick = function(pickData) {
     simplex[i] = positions[cell[i]]
   }
 
-  var position = closestPoint(
+  var data = closestPoint(
     simplex, 
     pickData.coord, 
     this._model, 
     this._view, 
     this._projection, 
     this._resolution)
-
-  if(!position) {
+  if(!data) {
     return null
   }
-
   return {
-    position: position,
+    position: data[1],
+    index:    cell[data[0]],
     cell:     cell,
     cellId:   cellId
   }

@@ -95,6 +95,7 @@ Using the output from gl-select finds the point on the mesh closest to the given
 * `positions` the position of the picked point on the mesh
 * `cellId`  the index of the closest cell
 * `cell` the cell of the closest point
+* `index` the index of the closest vertex
 
 ### `mesh.dispose()`
 Destroys the mesh object and releases all resources assigned to it.
