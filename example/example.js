@@ -8,6 +8,7 @@ var bunny = require("bunny")
 var createSimplicialComplex = require("../mesh.js")
 var createAxes = require('gl-axes')
 var createSpikes = require('gl-spikes')
+var sc = require('simplicial-complex')
 
 var bunnyMesh, select, spikes, axes
 var bounds = [[-10,-10,-10], [10,10,10]]
@@ -16,7 +17,7 @@ shell.on("gl-init", function() {
   var gl = shell.gl
 
   bunnyMesh = createSimplicialComplex(gl, {
-    cells: bunny.cells,
+    cells: sc.skeleton(bunny.cells, 1),
     positions: bunny.positions,
     meshColor: [0.2, 0.4, 0.3, 0.5]
   })

@@ -135,15 +135,16 @@ proto.update = function(params) {
   var pointSizes = params.pointSizes
   var meshPointSize = params.pointSize || 1.0
 
-  //Build id buffers buffers
-  var cellCount   = 0
-
   //Update bounds
   this.bounds       = [[Infinity,Infinity,Infinity], [-Infinity,-Infinity,-Infinity]]
   for(var i=0; i<positions.length; ++i) {
+    var p = positions[i]
     for(var j=0; j<3; ++j) {
-      this.bounds[0][j] = Math.min(this.bounds[0][j], positions[i][j])
-      this.bounds[1][j] = Math.max(this.bounds[1][j], positions[i][j])
+      if(isNaN(p) || !isFinite(p)) {
+        continue
+      }
+      this.bounds[0][j] = Math.min(this.bounds[0][j], p[j])
+      this.bounds[1][j] = Math.max(this.bounds[1][j], p[j])
     }
   }
 
@@ -151,15 +152,23 @@ proto.update = function(params) {
   var triangleCount = 0
   var edgeCount = 0
   var pointCount = 0
+
+fill_loop:
   for(var i=0; i<cells.length; ++i) {
     var cell = cells[i]
     switch(cell.length) {
       case 1:
-        ++pointCount
-
+        
         var v = cell[0]
-
         var p = positions[v]
+        
+        //Check NaNs
+        for(var j=0; j<3; ++j) {
+          if(isNaN(p[j]) || !isFinite(p[j])) {
+            continue fill_loop
+          }
+        }
+
         pPos.push(p[0], p[1], p[2])
 
         var c
@@ -182,15 +191,28 @@ proto.update = function(params) {
           pSiz.push(meshPointSize)
         }
 
-        pIds.push(cellCount++)
+        pIds.push(i)
+
+        pointCount += 1
       break
       
       case 2:
-        ++edgeCount
+
+        //Check NaNs
         for(var j=0; j<2; ++j) {
           var v = cell[j]
-
           var p = positions[v]
+          for(var k=0; k<3; ++k) {
+            if(isNaN(p[k]) || !isFinite(p[k])) {
+              continue fill_loop
+            }
+          }
+        }
+
+        for(var j=0; j<2; ++j) {
+          var v = cell[j]
+          var p = positions[v]
+
           ePos.push(p[0], p[1], p[2])
 
           var c
@@ -207,13 +229,23 @@ proto.update = function(params) {
             eCol.push(c[0], c[1], c[2], c[3])
           }
 
-          eIds.push(cellCount)
+          eIds.push(i)
         }
-        cellCount += 1
+        edgeCount += 1
       break
       
       case 3:
-        ++triangleCount
+        //Check NaNs
+        for(var j=0; j<3; ++j) {
+          var v = cell[j]
+          var p = positions[v]
+          for(var k=0; k<3; ++k) {
+            if(isNaN(p[k]) || !isFinite(p[k])) {
+              continue fill_loop
+            }
+          }
+        }
+
         for(var j=0; j<3; ++j) {
           var v = cell[j]
 
@@ -242,9 +274,9 @@ proto.update = function(params) {
           }
           tNor.push(q[0], q[1], q[2])
 
-          tIds.push(cellCount)
+          tIds.push(i)
         }
-        cellCount += 1
+        triangleCount += 1
       break
       
       default:
@@ -270,8 +302,7 @@ proto.update = function(params) {
   this.trianglePositions.update(tPos)
   this.triangleColors.update(tCol)
   this.triangleNormals.update(tNor)
-  this.triangleIds.update(new Uint32Array(tIds))
-  
+  this.triangleIds.update(new Uint32Array(tIds)) 
 }
 
 proto.draw = function(params) {
@@ -382,7 +413,7 @@ proto.drawPick = function(params) {
   }
   
   if(this.pointCount > 0) {
-    var shader = this.pointShader
+    var shader = this.pointPickShader
     shader.bind()
     var uniforms = shader.uniforms
     uniforms.model      = model
@@ -494,6 +525,7 @@ function createPointPickShader(gl) {
   var shader = createPointPickShaderGLSLify(gl)
   shader.attributes.position.location = 0
   shader.attributes.id.location = 2
+  shader.attributes.pointSize.location = 3
   return shader
 }
 
