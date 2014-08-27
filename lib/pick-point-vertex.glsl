@@ -17,7 +17,7 @@ void main() {
   } else {
     gl_Position  = projection * view * model * vec4(position, 1.0);
     gl_PointSize = pointSize;
-    f_id         = id;
-    f_position   = position;
   }
+  f_id         = id;
+  f_position   = position;
 }
