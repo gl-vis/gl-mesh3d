@@ -1,6 +1,6 @@
 {
   "name": "gl-simplicial-complex",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Draws a simplicial complex in WebGL",
   "main": "mesh.js",
   "directories": {
