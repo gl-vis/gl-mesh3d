@@ -1,0 +1,55 @@
+{
+  "name": "gl-simplicial-complex",
+  "version": "2.0.0",
+  "description": "Draws a simplicial complex in WebGL",
+  "main": "mesh.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "barycentric": "^1.0.1",
+    "colormap": "^2.0.1",
+    "gl-buffer": "^2.0.8",
+    "gl-mat4": "^1.0.0",
+    "gl-texture2d": "^2.0.8",
+    "gl-vao": "^1.1.3",
+    "glsl-specular-cook-torrance": "^2.0.1",
+    "glslify": "^1.5.0",
+    "ndarray": "^1.0.15",
+    "normals": "^1.0.0",
+    "polytope-closest-point": "^1.0.0"
+  },
+  "devDependencies": {
+    "bunny": "~1.0.0",
+    "game-shell-orbit-camera": "~0.0.0",
+    "gl-axes": "^5.0.2",
+    "gl-matrix": "^2.1.0",
+    "gl-now": "^1.3.1",
+    "gl-select": "^2.0.0",
+    "gl-spikes": "^1.0.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mikolalysenko/gl-simplicial-complex.git"
+  },
+  "keywords": [
+    "webgl",
+    "simplicial",
+    "complex",
+    "debug",
+    "simple"
+  ],
+  "browserify": {
+    "transform": [
+      "glslify"
+    ]
+  },
+  "author": "Mikola Lysenko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mikolalysenko/gl-simplicial-complex/issues"
+  }
+}
