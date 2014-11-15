@@ -27,8 +27,7 @@ shell.on("gl-render", function() {
           Math.PI/4.0,
           shell.width/shell.height,
           0.1,
-          1000.0),
-    lightPosition: [1*Math.cos(Date.now()*0.001), 100.0, 1*Math.sin(Date.now() * 0.001)]
+          1000.0)
   })
 })
 ```
@@ -56,6 +55,10 @@ Creates a simplicial complex that can be drawn directly in a WebGL context.
     + `cells` *(Required)* An indexed list of vertices, edges and/or faces.
     + `positions` *(Required)* An array of positions for the mesh, encoded as arrays
     + `vertexColors` A list of per vertex color attributes encoded as length 3 rgb arrays
+    + `vertexUVs`
+    + `cellUVs`
+    + `vertexIntensity`
+    + `cellIntensity`
     + `cellColors` A list of per cell color attributes
     + `meshColor` A constant color for the entire mesh
     + `vertexNormals` An array of per vertex normals
@@ -63,6 +66,12 @@ Creates a simplicial complex that can be drawn directly in a WebGL context.
     + `useFacetNormals` A flag which if set to `true` forces `cellNormals` to be computed
     + `pointSizes` An array of point sizes
     + `pointSize` A single point size float
+    + `ambientLight`
+    + `diffuseLight`
+    + `specularLight`
+    + `lightPosition`
+    + `roughness`
+    + `fresnel`
 
 **Returns** A renderable mesh object
 
@@ -73,12 +82,7 @@ Draws the mesh to the current buffer using a Phong material.
     + `model` The model matrix for the object
     + `view` The view matrix for the camera
     + `projection` The projection matrix for the display
-    + `lightPosition` The position of the light source
-    + `ambient` The intensity/color value of the ambient light
-    + `diffuse` The intensity/color value of the diffuse light
-    + `specular` The intensity/color value of the specular light
-    + `specularExponent` The specular exponent in the Blinn/Phong model
-
+    
 ### `mesh.update(params)`
 Updates the contents of the simplicial complex in place.
 
