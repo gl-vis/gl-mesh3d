@@ -1,11 +1,21 @@
 precision mediump float;
 
-uniform vec3 lightPosition, ambient, diffuse, specular;
-uniform vec3 clipBounds[2];
-uniform float specularExponent;
+#pragma glslify: cookTorrance = require(glsl-specular-cook-torrance)
 
+uniform vec3 clipBounds[2];
+uniform float roughness
+            , fresnel
+            , kambient
+            , kdiffuse
+            , kspecular;
+uniform sampler2D texture;
+
+varying vec3 f_normal
+           , f_lightDirection
+           , f_eyeDirection
+           , f_data;
 varying vec4 f_color;
-varying vec3 f_position, f_normal, viewDirection, f_data;
+varying vec2 f_uv;
 
 void main() {
   if(any(lessThan(f_data, clipBounds[0])) || 
@@ -13,10 +23,19 @@ void main() {
     discard;
   }
 
-  vec3 lightDirection = normalize(lightPosition - f_position);
-  vec3 normal = normalize(f_normal);
-  float diffuseIntensity = clamp(dot(normal, lightDirection), 0.0, 1.0);
-  vec3 halfView = normalize(lightDirection + normalize(viewDirection));
-  float specularIntensity = pow(clamp(dot(normal, halfView),0.0,1.0), specularExponent);
-  gl_FragColor = vec4(f_color.xyz * (ambient + diffuse * diffuseIntensity) + specular * specularIntensity, f_color.a);
+  vec3 N = normalize(f_normal);
+  vec3 L = normalize(f_lightDirection);
+  vec3 V = normalize(f_eyeDirection);
+  
+  if(!gl_FrontFacing) {
+    N = -N;
+  }
+
+  float specular = cookTorrance(L, V, N, roughness, fresnel);
+  float diffuse  = min(kambient + kdiffuse * max(dot(N, L), 0.0), 1.0);
+
+  vec4 surfaceColor = f_color * texture2D(texture, f_uv);
+  vec4 litColor = surfaceColor.a * vec4(diffuse * surfaceColor.rgb + kspecular * vec3(1,1,1) * specular,  1.0);
+
+  gl_FragColor = litColor;
 }

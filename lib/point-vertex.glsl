@@ -3,11 +3,13 @@ precision mediump float;
 attribute vec3 position;
 attribute float pointSize;
 attribute vec4 color;
+attribute vec2 uv;
 
 uniform mat4 model, view, projection;
 uniform vec3 clipBounds[2];
 
 varying vec4 f_color;
+varying vec2 f_uv;
 
 void main() {
   if(any(lessThan(position, clipBounds[0])) || 
@@ -17,5 +19,6 @@ void main() {
     gl_Position = projection * view * model * vec4(position, 1.0);
     gl_PointSize = pointSize;
     f_color = color;
+    f_uv = uv;
   }
 }

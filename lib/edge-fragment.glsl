@@ -1,9 +1,11 @@
 precision mediump float;
 
 uniform vec3 clipBounds[2];
+uniform sampler2D texture;
 
 varying vec4 f_color;
 varying vec3 f_data;
+varying vec2 f_uv;
 
 void main() {
   if(any(lessThan(f_data, clipBounds[0])) || 
@@ -11,5 +13,5 @@ void main() {
     discard;
   }
 
-  gl_FragColor = f_color;
+  gl_FragColor = f_color * texture2D(texture, f_uv);
 }

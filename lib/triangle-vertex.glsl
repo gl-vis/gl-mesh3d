@@ -1,22 +1,30 @@
 precision mediump float;
 
-attribute vec3 position;
+attribute vec3 position, normal;
 attribute vec4 color;
-attribute vec3 normal;
+attribute vec2 uv;
 
-uniform mat4 model, modelInverseTranspose, view, projection;
-uniform vec3 eyePosition;
+uniform mat4 model
+           , view
+           , projection;
+uniform vec3 eyePosition
+           , lightPosition;
 
+varying vec3 f_normal
+           , f_lightDirection
+           , f_eyeDirection
+           , f_data;
 varying vec4 f_color;
-varying vec3 f_position, f_normal, viewDirection, f_data;
+varying vec2 f_uv;
 
 void main() {
-  vec4 m_position = model * vec4(position, 1.0);
-  vec4 t_position = view * m_position;
-  gl_Position = projection * t_position;
-  f_color = color;
-  f_normal = normalize((modelInverseTranspose * vec4(normal, 0.0)).xyz);
-  f_position = m_position.xyz/m_position.w;
-  f_data = position;
-  viewDirection = eyePosition - f_position;
+  vec4 m_position  = model * vec4(position, 1.0);
+  vec4 t_position  = view * m_position;
+  gl_Position      = projection * t_position;
+  f_color          = color;
+  f_normal         = normal;
+  f_data           = position;
+  f_eyeDirection   = eyePosition   - position;
+  f_lightDirection = lightPosition - position;
+  f_uv             = uv;
 }

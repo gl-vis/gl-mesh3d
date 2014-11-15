@@ -1,14 +1,15 @@
 "use strict"
 
-var shell = require("gl-now")()
-var camera = require("game-shell-orbit-camera")(shell)
-var mat4 = require("gl-matrix").mat4
-var createSelect = require("gl-select")
-var bunny = require("bunny")
-var createSimplicialComplex = require("../mesh.js")
-var createAxes = require('gl-axes')
+var shell        = require('gl-now')()
+var camera       = require('game-shell-orbit-camera')(shell)
+var mat4         = require('gl-matrix').mat4
+var createSelect = require('gl-select')
+var bunny        = require('bunny')
+var createAxes   = require('gl-axes')
 var createSpikes = require('gl-spikes')
-var sc = require('simplicial-complex')
+var sc           = require('simplicial-complex')
+
+var createSimplicialComplex = require('../mesh.js')
 
 var bunnyMesh, select, spikes, axes
 var bounds = [[-10,-10,-10], [10,10,10]]
@@ -17,9 +18,9 @@ shell.on("gl-init", function() {
   var gl = shell.gl
 
   bunnyMesh = createSimplicialComplex(gl, {
-    cells: sc.skeleton(bunny.cells, 1),
+    cells: bunny.cells,
     positions: bunny.positions,
-    meshColor: [0.2, 0.4, 0.3, 0.5]
+    colormap: 'jet'
   })
 
   select = createSelect(gl, [shell.height, shell.width])
@@ -38,7 +39,6 @@ shell.on("gl-init", function() {
 })
 
 shell.on("gl-render", function() {
-
   var gl = shell.gl
 
   var cameraParams = {
@@ -47,8 +47,7 @@ shell.on("gl-render", function() {
           Math.PI/4.0,
           shell.width/shell.height,
           0.1,
-          1000.0),
-    lightPosition: [1*Math.cos(Date.now()*0.001), 100.0, 1*Math.sin(Date.now() * 0.001)]
+          1000.0)
   }
 
   gl.enable(gl.DEPTH_TEST)
@@ -65,10 +64,5 @@ shell.on("gl-render", function() {
 
   axes.draw(cameraParams)
 
-  gl.enable(gl.CULL_FACE)
-  gl.enable(gl.BLEND)
-  gl.blendEquation( gl.FUNC_ADD )
-  gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA )
   bunnyMesh.draw(cameraParams)
-  gl.disable(gl.BLEND)
 })
