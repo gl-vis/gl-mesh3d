@@ -234,9 +234,6 @@ proto.update = function(params) {
     }
   }
 
-
-
-  
   //Point size
   var pointSizes      = params.pointSizes
   var meshPointSize   = params.pointSize || 1.0
@@ -310,7 +307,7 @@ fill_loop:
             (intensityHi - intensityLo), 0]
         }
         pUVs.push(uv[0], uv[1])
-
+        
         if(pointSizes) {
           pSiz.push(pointSizes[v])
         } else {
@@ -666,20 +663,19 @@ proto.dispose = function() {
   this.pointPickShader.dispose()
 
   this.triangleVAO.dispose()
-  this.edgeVAO.dispose()
-  this.pointVAO.dispose()
-
   this.trianglePositions.dispose()
   this.triangleColors.dispose()
   this.triangleUVs.dispose()
   this.triangleNormals.dispose()
   this.triangleIds.dispose()
 
+  this.edgeVAO.dispose()
   this.edgePositions.dispose()
   this.edgeColors.dispose()
   this.edgeUVs.dispose()
   this.edgeIds.dispose()
 
+  this.pointVAO.dispose()
   this.pointPositions.dispose()
   this.pointColors.dispose()
   this.pointUVs.dispose()

@@ -20,7 +20,8 @@ shell.on("gl-init", function() {
   bunnyMesh = createSimplicialComplex(gl, {
     cells: bunny.cells,
     positions: bunny.positions,
-    colormap: 'jet'
+    colormap: 'jet',
+    pointSize: 10
   })
 
   select = createSelect(gl, [shell.height, shell.width])
