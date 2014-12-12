@@ -293,7 +293,7 @@ fill_loop:
           uv = vertexUVs[v]
         } else if(vertexIntensity) {
           uv = [
-            (vertexIntensity[i] - intensityLo) / 
+            (vertexIntensity[v] - intensityLo) / 
             (intensityHi - intensityLo), 0]
         } else if(cellUVs) {
           uv = cellUVs[i]
@@ -357,7 +357,7 @@ fill_loop:
             uv = vertexUVs[v]
           } else if(vertexIntensity) {
             uv = [
-              (vertexIntensity[i] - intensityLo) / 
+              (vertexIntensity[v] - intensityLo) / 
               (intensityHi - intensityLo), 0]
           } else if(cellUVs) {
             uv = cellUVs[i]
@@ -414,7 +414,7 @@ fill_loop:
             uv = vertexUVs[v]
           } else if(vertexIntensity) {
             uv = [
-              (vertexIntensity[i] - intensityLo) / 
+              (vertexIntensity[v] - intensityLo) / 
               (intensityHi - intensityLo), 0]
           } else if(cellUVs) {
             uv = cellUVs[i]
