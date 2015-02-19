@@ -3,6 +3,7 @@
 var createBuffer  = require('gl-buffer')
 var createVAO     = require('gl-vao')
 var createTexture = require('gl-texture2d')
+var createShader  = require('gl-shader')
 var glslify       = require('glslify')
 var normals       = require('normals')
 var multiply      = require('gl-mat4/multiply')
@@ -11,25 +12,30 @@ var ndarray       = require('ndarray')
 var colormap      = require('colormap')
 var closestPoint  = require('./lib/closest-point')
 
-var createMeshShaderGLSLify = glslify({
+var meshShader = glslify({
   vertex:   './lib/triangle-vertex.glsl', 
-  fragment: './lib/triangle-fragment.glsl'
+  fragment: './lib/triangle-fragment.glsl',
+  sourceOnly: true
 })
-var createWireShaderGLSLify = glslify({
+var wireShader = glslify({
   vertex:   './lib/edge-vertex.glsl',
-  fragment: './lib/edge-fragment.glsl'
+  fragment: './lib/edge-fragment.glsl',
+  sourceOnly: true
 })
-var createPointShaderGLSLify = glslify({
+var pointShader = glslify({
   vertex:   './lib/point-vertex.glsl',
-  fragment: './lib/point-fragment.glsl'
+  fragment: './lib/point-fragment.glsl',
+  sourceOnly: true
 })
-var createPickShaderGLSLify = glslify({
+var pickShader = glslify({
   vertex:   './lib/pick-vertex.glsl', 
-  fragment: './lib/pick-fragment.glsl'
+  fragment: './lib/pick-fragment.glsl',
+  sourceOnly: true
 })
-var createPointPickShaderGLSLify = glslify({
+var pointPickShader = glslify({
   vertex:   './lib/pick-point-vertex.glsl', 
-  fragment: './lib/pick-fragment.glsl'
+  fragment: './lib/pick-fragment.glsl',
+  sourceOnly: true
 })
 
 var identityMatrix = [
@@ -684,7 +690,7 @@ proto.dispose = function() {
 }
 
 function createMeshShader(gl) {
-  var shader = createMeshShaderGLSLify(gl)
+  var shader = createShader(gl, meshShader)
   shader.attributes.position.location = 0
   shader.attributes.color.location    = 2
   shader.attributes.uv.location       = 3
@@ -693,7 +699,7 @@ function createMeshShader(gl) {
 }
 
 function createWireShader(gl) {
-  var shader = createWireShaderGLSLify(gl)
+  var shader = createShader(gl, wireShader)
   shader.attributes.position.location = 0
   shader.attributes.color.location    = 2
   shader.attributes.uv.location       = 3
@@ -701,7 +707,7 @@ function createWireShader(gl) {
 }
 
 function createPointShader(gl) {
-  var shader = createPointShaderGLSLify(gl)
+  var shader = createShader(gl, pointShader)
   shader.attributes.position.location  = 0
   shader.attributes.color.location     = 2
   shader.attributes.uv.location        = 3
@@ -710,14 +716,14 @@ function createPointShader(gl) {
 }
 
 function createPickShader(gl) {
-  var shader = createPickShaderGLSLify(gl)
+  var shader = createShader(gl, pickShader)
   shader.attributes.position.location = 0
   shader.attributes.id.location       = 1
   return shader
 }
 
 function createPointPickShader(gl) {
-  var shader = createPointPickShaderGLSLify(gl)
+  var shader = createShader(gl, pointPickShader)
   shader.attributes.position.location  = 0
   shader.attributes.id.location        = 1
   shader.attributes.pointSize.location = 4
