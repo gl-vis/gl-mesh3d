@@ -198,7 +198,7 @@ proto.update = function(params) {
   //Compute normals
   var vertexNormals = params.vertexNormals
   var cellNormals   = params.cellNormals
-  if(params.useCellNormals && !cellNormals) {
+  if(params.useFacetNormals && !cellNormals) {
     cellNormals = normals.faceNormals(cells, positions)
   }
   if(!cellNormals && !vertexNormals) {

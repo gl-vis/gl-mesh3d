@@ -25,23 +25,29 @@ var camera = createCamera(canvas, {
 var mesh = createMesh(gl, {
   cells:      bunny.cells,
   positions:  bunny.positions,
-  colormap:   'jet',
+  meshColor:  [1, 0, 0],
   useFacetNormals: true
 })
 var select = createSelect(gl, [canvas.width, canvas.height])
 var axes = createAxes(gl, { bounds: bounds })
-var spikes = createSpikes(gl, { bounds: bounds })
+var spikes = createSpikes(gl, { 
+  bounds: bounds
+})
+var spikeChanged = false
 
 mouseChange(canvas, function(buttons, x, y) {
-  var pickResult = mesh.pick(select.query(x, y, 10))
+  var pickData = select.query(x, canvas.height - y, 10)
+  var pickResult = mesh.pick(pickData)
   if(pickResult) {
     spikes.update({
       position: pickResult.position,
-      enabled: true
+      enabled: [true, true, true]
     })
+    spikeChanged = true
   } else {
+    spikeChanged = spikes.enabled[0]
     spikes.update({
-      enabled: false
+      enabled: [false, false, false]
     })
   }
 })
@@ -57,17 +63,21 @@ function render() {
     view: camera.matrix
   }
 
+  if(needsUpdate || spikeChanged) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    gl.viewport(0, 0, canvas.width, canvas.height)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    axes.draw(cameraParams)
+    spikes.draw(cameraParams)
+    mesh.draw(cameraParams)
+    spikeChanged = false
+  }
+
   if(needsUpdate) {
-    select.shape = [canvas.height, canvas.width]
+    select.shape = [canvas.width, canvas.height]
     select.begin()
     mesh.drawPick(cameraParams)
     select.end()
   }
-
-  gl.viewport(0, 0, canvas.width, canvas.height)
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  axes.draw(cameraParams)
-  spikes.draw(cameraParams)
-  mesh.draw(cameraParams)
 }
 render()
