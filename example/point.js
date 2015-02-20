@@ -26,6 +26,7 @@ var camera = createCamera(canvas, {
 var mesh = createMesh(gl, {
   cells:      sc.skeleton(bunny.cells, 0),
   positions:  bunny.positions,
+  pointSize:  5,
   colormap:   'jet'
 })
 var select = createSelect(gl, [canvas.width, canvas.height])
