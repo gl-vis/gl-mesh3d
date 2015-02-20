@@ -3,6 +3,7 @@
 var createBuffer  = require('gl-buffer')
 var createVAO     = require('gl-vao')
 var createTexture = require('gl-texture2d')
+var createShader  = require('gl-shader')
 var glslify       = require('glslify')
 var normals       = require('normals')
 var multiply      = require('gl-mat4/multiply')
@@ -11,25 +12,30 @@ var ndarray       = require('ndarray')
 var colormap      = require('colormap')
 var closestPoint  = require('./lib/closest-point')
 
-var createMeshShaderGLSLify = glslify({
+var meshShader = glslify({
   vertex:   './lib/triangle-vertex.glsl', 
-  fragment: './lib/triangle-fragment.glsl'
+  fragment: './lib/triangle-fragment.glsl',
+  sourceOnly: true
 })
-var createWireShaderGLSLify = glslify({
+var wireShader = glslify({
   vertex:   './lib/edge-vertex.glsl',
-  fragment: './lib/edge-fragment.glsl'
+  fragment: './lib/edge-fragment.glsl',
+  sourceOnly: true
 })
-var createPointShaderGLSLify = glslify({
+var pointShader = glslify({
   vertex:   './lib/point-vertex.glsl',
-  fragment: './lib/point-fragment.glsl'
+  fragment: './lib/point-fragment.glsl',
+  sourceOnly: true
 })
-var createPickShaderGLSLify = glslify({
+var pickShader = glslify({
   vertex:   './lib/pick-vertex.glsl', 
-  fragment: './lib/pick-fragment.glsl'
+  fragment: './lib/pick-fragment.glsl',
+  sourceOnly: true
 })
-var createPointPickShaderGLSLify = glslify({
+var pointPickShader = glslify({
   vertex:   './lib/pick-point-vertex.glsl', 
-  fragment: './lib/pick-fragment.glsl'
+  fragment: './lib/pick-fragment.glsl',
+  sourceOnly: true
 })
 
 var identityMatrix = [
@@ -192,8 +198,8 @@ proto.update = function(params) {
   //Compute normals
   var vertexNormals = params.vertexNormals
   var cellNormals   = params.cellNormals
-  if(params.useCellNormals && !cellNormals) {
-    cellNormals = normals.facetNormals(cells, positions)
+  if(params.useFacetNormals && !cellNormals) {
+    cellNormals = normals.faceNormals(cells, positions)
   }
   if(!cellNormals && !vertexNormals) {
     vertexNormals = normals.vertexNormals(cells, positions)
@@ -234,9 +240,6 @@ proto.update = function(params) {
     }
   }
 
-
-
-  
   //Point size
   var pointSizes      = params.pointSizes
   var meshPointSize   = params.pointSize || 1.0
@@ -296,7 +299,7 @@ fill_loop:
           uv = vertexUVs[v]
         } else if(vertexIntensity) {
           uv = [
-            (vertexIntensity[i] - intensityLo) / 
+            (vertexIntensity[v] - intensityLo) / 
             (intensityHi - intensityLo), 0]
         } else if(cellUVs) {
           uv = cellUVs[i]
@@ -310,7 +313,7 @@ fill_loop:
             (intensityHi - intensityLo), 0]
         }
         pUVs.push(uv[0], uv[1])
-
+        
         if(pointSizes) {
           pSiz.push(pointSizes[v])
         } else {
@@ -360,7 +363,7 @@ fill_loop:
             uv = vertexUVs[v]
           } else if(vertexIntensity) {
             uv = [
-              (vertexIntensity[i] - intensityLo) / 
+              (vertexIntensity[v] - intensityLo) / 
               (intensityHi - intensityLo), 0]
           } else if(cellUVs) {
             uv = cellUVs[i]
@@ -417,7 +420,7 @@ fill_loop:
             uv = vertexUVs[v]
           } else if(vertexIntensity) {
             uv = [
-              (vertexIntensity[i] - intensityLo) / 
+              (vertexIntensity[v] - intensityLo) / 
               (intensityHi - intensityLo), 0]
           } else if(cellUVs) {
             uv = cellUVs[i]
@@ -637,7 +640,7 @@ proto.pick = function(pickData) {
 
   var data = closestPoint(
     simplex, 
-    pickData.coord, 
+    [pickData.coord[0], this._resolution[1]-pickData.coord[1]], 
     this._model, 
     this._view, 
     this._projection, 
@@ -666,20 +669,19 @@ proto.dispose = function() {
   this.pointPickShader.dispose()
 
   this.triangleVAO.dispose()
-  this.edgeVAO.dispose()
-  this.pointVAO.dispose()
-
   this.trianglePositions.dispose()
   this.triangleColors.dispose()
   this.triangleUVs.dispose()
   this.triangleNormals.dispose()
   this.triangleIds.dispose()
 
+  this.edgeVAO.dispose()
   this.edgePositions.dispose()
   this.edgeColors.dispose()
   this.edgeUVs.dispose()
   this.edgeIds.dispose()
 
+  this.pointVAO.dispose()
   this.pointPositions.dispose()
   this.pointColors.dispose()
   this.pointUVs.dispose()
@@ -688,7 +690,7 @@ proto.dispose = function() {
 }
 
 function createMeshShader(gl) {
-  var shader = createMeshShaderGLSLify(gl)
+  var shader = createShader(gl, meshShader)
   shader.attributes.position.location = 0
   shader.attributes.color.location    = 2
   shader.attributes.uv.location       = 3
@@ -697,7 +699,7 @@ function createMeshShader(gl) {
 }
 
 function createWireShader(gl) {
-  var shader = createWireShaderGLSLify(gl)
+  var shader = createShader(gl, wireShader)
   shader.attributes.position.location = 0
   shader.attributes.color.location    = 2
   shader.attributes.uv.location       = 3
@@ -705,7 +707,7 @@ function createWireShader(gl) {
 }
 
 function createPointShader(gl) {
-  var shader = createPointShaderGLSLify(gl)
+  var shader = createShader(gl, pointShader)
   shader.attributes.position.location  = 0
   shader.attributes.color.location     = 2
   shader.attributes.uv.location        = 3
@@ -714,14 +716,14 @@ function createPointShader(gl) {
 }
 
 function createPickShader(gl) {
-  var shader = createPickShaderGLSLify(gl)
+  var shader = createShader(gl, pickShader)
   shader.attributes.position.location = 0
   shader.attributes.id.location       = 1
   return shader
 }
 
 function createPointPickShader(gl) {
-  var shader = createPointPickShaderGLSLify(gl)
+  var shader = createShader(gl, pointPickShader)
   shader.attributes.position.location  = 0
   shader.attributes.id.location        = 1
   shader.attributes.pointSize.location = 4
