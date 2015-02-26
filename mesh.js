@@ -73,6 +73,7 @@ function SimplicialMesh(gl
   this.cells             = []
   this.positions         = []
   this.texture           = texture
+  this.dirty             = true
 
   this.triShader         = triShader
   this.lineShader        = lineShader
@@ -149,10 +150,18 @@ function genColormap(param) {
 proto.update = function(params) {
   params = params || {}
   var gl = this.gl
-  
-  var cells = params.cells
-  var positions = params.positions
 
+  this.dirty = true
+  
+  if('clipBounds' in params) {
+    this.clipBounds = params.clipBounds
+  }
+  if('pickId' in params) {
+    this.pickId = params.pickId
+  }
+  if('lineWidth' in params) {
+    this.lineWidth = params.lineWidth
+  }
   if(params.texture) {
     this.texture.dispose()
     this.texture = createTexture(gl, params.texture)
@@ -162,6 +171,13 @@ proto.update = function(params) {
     this.texture.magFilter = gl.LINEAR
     this.texture.setPixels(genColormap(params.colormap))
     this.texture.generateMipmap()
+  }
+
+  var cells = params.cells
+  var positions = params.positions
+
+  if(!positions || !cells) {
+    return
   }
 
   var tPos = []
@@ -180,16 +196,6 @@ proto.update = function(params) {
   var pUVs = []
   var pSiz = []
   var pIds = []
-
-  if('clipBounds' in params) {
-    this.clipBounds = params.clipBounds
-  }
-  if('pickId' in params) {
-    this.pickId = params.pickId
-  }
-  if('lineWidth' in params) {
-    this.lineWidth = params.lineWidth
-  }
 
   //Save geometry data for picking calculations
   this.cells     = cells
@@ -249,7 +255,7 @@ proto.update = function(params) {
   for(var i=0; i<positions.length; ++i) {
     var p = positions[i]
     for(var j=0; j<3; ++j) {
-      if(isNaN(p) || !isFinite(p)) {
+      if(isNaN(p[j]) || !isFinite(p[j])) {
         continue
       }
       this.bounds[0][j] = Math.min(this.bounds[0][j], p[j])
