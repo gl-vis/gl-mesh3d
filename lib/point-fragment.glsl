@@ -1,6 +1,7 @@
 precision mediump float;
 
 uniform sampler2D texture;
+uniform float opacity;
 
 varying vec4 f_color;
 varying vec2 f_uv;
@@ -10,5 +11,5 @@ void main() {
   if(dot(pointR, pointR) > 0.25) {
     discard;
   }
-  gl_FragColor = f_color * texture2D(texture, f_uv);
+  gl_FragColor = f_color * texture2D(texture, f_uv) * opacity;
 }

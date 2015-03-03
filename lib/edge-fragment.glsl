@@ -2,6 +2,7 @@ precision mediump float;
 
 uniform vec3 clipBounds[2];
 uniform sampler2D texture;
+uniform float opacity;
 
 varying vec4 f_color;
 varying vec3 f_data;
@@ -13,5 +14,5 @@ void main() {
     discard;
   }
 
-  gl_FragColor = f_color * texture2D(texture, f_uv);
+  gl_FragColor = f_color * texture2D(texture, f_uv) * opacity;
 }

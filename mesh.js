@@ -4,39 +4,19 @@ var createBuffer  = require('gl-buffer')
 var createVAO     = require('gl-vao')
 var createTexture = require('gl-texture2d')
 var createShader  = require('gl-shader')
-var glslify       = require('glslify')
 var normals       = require('normals')
 var multiply      = require('gl-mat4/multiply')
 var invert        = require('gl-mat4/invert')
 var ndarray       = require('ndarray')
 var colormap      = require('colormap')
+var shaders       = require('./lib/shaders')
 var closestPoint  = require('./lib/closest-point')
 
-var meshShader = glslify({
-  vertex:   './lib/triangle-vertex.glsl', 
-  fragment: './lib/triangle-fragment.glsl',
-  sourceOnly: true
-})
-var wireShader = glslify({
-  vertex:   './lib/edge-vertex.glsl',
-  fragment: './lib/edge-fragment.glsl',
-  sourceOnly: true
-})
-var pointShader = glslify({
-  vertex:   './lib/point-vertex.glsl',
-  fragment: './lib/point-fragment.glsl',
-  sourceOnly: true
-})
-var pickShader = glslify({
-  vertex:   './lib/pick-vertex.glsl', 
-  fragment: './lib/pick-fragment.glsl',
-  sourceOnly: true
-})
-var pointPickShader = glslify({
-  vertex:   './lib/pick-point-vertex.glsl', 
-  fragment: './lib/pick-fragment.glsl',
-  sourceOnly: true
-})
+var meshShader    = shaders.meshShader
+var wireShader    = shaders.wireShader
+var pointShader   = shaders.pointShader
+var pickShader    = shaders.pickShader
+var pointPickShader = shaders.pointPickShader
 
 var identityMatrix = [
   1,0,0,0,
@@ -119,6 +99,7 @@ function SimplicialMesh(gl
   this.specularLight = 2.0
   this.roughness     = 0.5
   this.fresnel       = 1.5
+  this.opacity       = 1.0
 
   this._model       = identityMatrix
   this._view        = identityMatrix
@@ -127,6 +108,20 @@ function SimplicialMesh(gl
 }
 
 var proto = SimplicialMesh.prototype
+
+proto.isOpaque = function() {
+  return this.opacity >= 1
+}
+
+proto.isTransparent = function() {
+  return this.opacity < 1
+}
+
+proto.pickSlots = 1
+
+proto.setPickBase = function(id) {
+  this.pickId = id
+}
 
 function genColormap(param) {
   var colors = colormap({
@@ -481,7 +476,7 @@ fill_loop:
   this.triangleIds.update(new Uint32Array(tIds)) 
 }
 
-proto.draw = function(params) {
+proto.drawTransparent = proto.draw = function(params) {
   params = params || {}
   var gl          = this.gl
   var model       = params.model      || identityMatrix
@@ -510,6 +505,8 @@ proto.draw = function(params) {
     eyePosition:   [0,0,0],
     lightPosition: [0,0,0],
 
+    opacity:  this.opacity,
+
     texture:    0
   }
 
@@ -517,7 +514,7 @@ proto.draw = function(params) {
   
   var invCameraMatrix = new Array(16)
   multiply(invCameraMatrix, uniforms.view, uniforms.model)
-  multiply(invCameraMatrix, uniforms.projection, uniforms.view)
+  multiply(invCameraMatrix, uniforms.projection, invCameraMatrix)
   invert(invCameraMatrix, invCameraMatrix)
 
   for(var i=0; i<3; ++i) {
