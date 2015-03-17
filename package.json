@@ -38,7 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mikolalysenko/gl-simplicial-complex.git"
+    "url": "git://github.com/gl-vis/gl-simplicial-complex.git"
   },
   "keywords": [
     "webgl",
@@ -55,6 +55,6 @@
   "author": "Mikola Lysenko",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mikolalysenko/gl-simplicial-complex/issues"
+    "url": "https://github.com/gl-vis/gl-simplicial-complex/issues"
   }
 }

@@ -1,57 +1,48 @@
 gl-simplicial-complex
 =====================
-Basic module for drawing a simplicial complex.  This code can be used to get something on the screen quickly.  It is useful for debugging and prototyping, though in a real 3d engine you would probably want to write your own shaders and vertex formats.
+Visualization module for meshes/point clouds/graphs.
 
-Example
-=======
+# Example
 
 ```javascript
-var shell = require("gl-now")()
-var camera = require("game-shell-orbit-camera")(shell)
-var mat4 = require("gl-matrix").mat4
-var bunny = require("bunny")
-var createSimplicialComplex = require("gl-simplicial-complex")
+var createScene = require('gl-plot3d')
+var createMesh = require('gl-simplicial-complex')
+var bunny = require('bunny')
 
-var mesh
+var scene = createScene()
 
-shell.on("gl-init", function() {
-  var gl = shell.gl
-  gl.enable(gl.DEPTH_TEST)
-  bunnyMesh = createSimplicialComplex(gl, bunny)
+var mesh = createMesh({
+  gl:         scene.gl,
+  cells:      bunny.cells,
+  positions:  bunny.positions,
+  colormap:   'jet'
 })
 
-shell.on("gl-render", function() {
-  bunnyMesh.draw({
-    view: camera.view(),
-    projection: mat4.perspective(mat4.create(),
-          Math.PI/4.0,
-          shell.width/shell.height,
-          0.1,
-          1000.0)
-  })
-})
+scene.add(mesh)
 ```
 
 [Try out the example in your browser](http://mikolalysenko.github.io/gl-simplicial-complex/)
 
-Install
-=======
+# Install
 
-    npm instal gl-simplicial-complex
+```
+npm i gl-simplicial-complex
+```
     
-API
-===
+# Basic interface
 
 ```javascript
 var createSimplicialComplex = require("gl-simplicial-complex")
 ```
 
-### `var mesh = createSimplicialComplex(gl, params)`
+## Constructor
+
+#### `var mesh = createSimplicialComplex(params)`
 Creates a simplicial complex that can be drawn directly in a WebGL context.
 
-* `gl` - is a handle to a WebGL context
 * `params` is an object that has the following properties:
 
+    + `gl` A reference to the WebGL context
     + `cells` *(Required)* An indexed list of vertices, edges and/or faces.
     + `positions` *(Required)* An array of positions for the mesh, encoded as arrays
     + `vertexColors` A list of per vertex color attributes encoded as length 3 rgb arrays
@@ -66,43 +57,43 @@ Creates a simplicial complex that can be drawn directly in a WebGL context.
     + `useFacetNormals` A flag which if set to `true` forces `cellNormals` to be computed
     + `pointSizes` An array of point sizes
     + `pointSize` A single point size float
-    + `ambientLight`
-    + `diffuseLight`
-    + `specularLight`
-    + `lightPosition`
-    + `roughness`
-    + `fresnel`
+    + `ambientLight` ambient light color * intensity
+    + `diffuseLight` diffuse light color * intensity
+    + `specularLight` specular light color
+    + `lightPosition` location of light
+    + `roughness` surface roughness
+    + `fresnel` surface glossiness/"rim light" factor
+    + `opacity` surface opacity
 
 **Returns** A renderable mesh object
 
-### `mesh.draw(params)`
-Draws the mesh to the current buffer using a Phong material.
+## Update
 
-* `params` is an object that has the following properties
-    + `model` The model matrix for the object
-    + `view` The view matrix for the camera
-    + `projection` The projection matrix for the display
-    
-### `mesh.update(params)`
+#### `mesh.update(params)`
 Updates the contents of the simplicial complex in place.
 
 * `params` is a list of parameters which are in the same format as `createSimplicialComplex`
 
-### `mesh.drawPick(params)`
-Draws the mesh for the purposes of point picking and selection.
+## Properties
 
-### `mesh.pick(pickData)`
-Using the output from gl-select finds the point on the mesh closest to the given pick data.
+#### `mesh.ambientLight`
+Ambient light color
 
-**Returns** An object with the following properties:
+#### `mesh.diffuseLight`
+Diffuse light color
 
-* `positions` the position of the picked point on the mesh
-* `cellId`  the index of the closest cell
-* `cell` the cell of the closest point
-* `index` the index of the closest vertex
+#### `mesh.specularLight`
+Specular light color
 
-### `mesh.dispose()`
-Destroys the mesh object and releases all resources assigned to it.
+#### `mesh.roughness`
+Mesh surface roughness
+
+#### `mesh.fresnel`
+Fresnel parameter
+
+#### `mesh.opacity`
+Opacity
+
 
 # Credits
-(c) 2013 Mikola Lysenko. MIT License
+(c) 2013-2015 Mikola Lysenko. MIT License

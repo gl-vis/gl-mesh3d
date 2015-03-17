@@ -148,15 +148,13 @@ proto.update = function(params) {
 
   this.dirty = true
   
-  if('clipBounds' in params) {
-    this.clipBounds = params.clipBounds
-  }
-  if('pickId' in params) {
-    this.pickId = params.pickId
-  }
   if('lineWidth' in params) {
     this.lineWidth = params.lineWidth
   }
+  if('opacity' in params) {
+    this.opacity = params.opacity
+  }
+
   if(params.texture) {
     this.texture.dispose()
     this.texture = createTexture(gl, params.texture)
@@ -733,7 +731,9 @@ function createPointPickShader(gl) {
   return shader
 }
 
-function createSimplicialMesh(gl, params) {
+function createSimplicialMesh(params) {
+  var gl = params.gl
+
   var triShader       = createMeshShader(gl)
   var lineShader      = createWireShader(gl)
   var pointShader     = createPointShader(gl)
