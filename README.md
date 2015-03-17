@@ -21,7 +21,7 @@ var mesh = createMesh({
 scene.add(mesh)
 ```
 
-[Try out the example in your browser](http://mikolalysenko.github.io/gl-simplicial-complex/)
+[Try out the example in your browser](http://gl-vis.github.io/gl-simplicial-complex/)
 
 # Install
 
@@ -93,7 +93,6 @@ Fresnel parameter
 
 #### `mesh.opacity`
 Opacity
-
 
 # Credits
 (c) 2013-2015 Mikola Lysenko. MIT License
