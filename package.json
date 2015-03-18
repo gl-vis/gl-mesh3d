@@ -1,7 +1,7 @@
 {
-  "name": "gl-simplicial-complex",
-  "version": "5.0.0",
-  "description": "Draws a simplicial complex in WebGL",
+  "name": "gl-mesh3d",
+  "version": "1.0.0",
+  "description": "3D mesh drawing",
   "main": "mesh.js",
   "directories": {
     "example": "example"
@@ -38,7 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/gl-vis/gl-simplicial-complex.git"
+    "url": "git://github.com/gl-vis/gl-mesh3d.git"
   },
   "keywords": [
     "webgl",
@@ -55,6 +55,6 @@
   "author": "Mikola Lysenko",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gl-vis/gl-simplicial-complex/issues"
+    "url": "https://github.com/gl-vis/gl-mesh3d/issues"
   }
 }

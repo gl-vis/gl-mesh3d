@@ -1,4 +1,4 @@
-gl-simplicial-complex
+gl-mesh3d
 =====================
 Visualization module for meshes/point clouds/graphs.
 
@@ -6,8 +6,8 @@ Visualization module for meshes/point clouds/graphs.
 
 ```javascript
 var createScene = require('gl-plot3d')
-var createMesh = require('gl-simplicial-complex')
-var bunny = require('bunny')
+var createMesh  = require('gl-mesh3d')
+var bunny       = require('bunny')
 
 var scene = createScene()
 
@@ -21,23 +21,19 @@ var mesh = createMesh({
 scene.add(mesh)
 ```
 
-[Try out the example in your browser](http://gl-vis.github.io/gl-simplicial-complex/)
+[Try out the example in your browser](http://gl-vis.github.io/gl-mesh3d/)
 
 # Install
 
 ```
-npm i gl-simplicial-complex
+npm i gl-mesh3d
 ```
     
 # Basic interface
 
-```javascript
-var createSimplicialComplex = require("gl-simplicial-complex")
-```
-
 ## Constructor
 
-#### `var mesh = createSimplicialComplex(params)`
+#### `var mesh = require('gl-mesh3d')(params)`
 Creates a simplicial complex that can be drawn directly in a WebGL context.
 
 * `params` is an object that has the following properties:
@@ -72,7 +68,7 @@ Creates a simplicial complex that can be drawn directly in a WebGL context.
 #### `mesh.update(params)`
 Updates the contents of the simplicial complex in place.
 
-* `params` is a list of parameters which are in the same format as `createSimplicialComplex`
+* `params` is a list of parameters which are in the same format as the constructor
 
 ## Properties
 
