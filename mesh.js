@@ -99,6 +99,7 @@ function SimplicialMesh(gl
   this.specularLight = 2.0
   this.roughness     = 0.5
   this.fresnel       = 1.5
+  
   this.opacity       = 1.0
 
   this._model       = identityMatrix
@@ -154,7 +155,7 @@ proto.update = function(params) {
   if('opacity' in params) {
     this.opacity = params.opacity
   }
-
+  
   if(params.texture) {
     this.texture.dispose()
     this.texture = createTexture(gl, params.texture)
