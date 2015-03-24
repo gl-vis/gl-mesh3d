@@ -9,6 +9,8 @@ var multiply      = require('gl-mat4/multiply')
 var invert        = require('gl-mat4/invert')
 var ndarray       = require('ndarray')
 var colormap      = require('colormap')
+var getContour    = require('simplicial-complex-contour')
+var pool          = require('typedarray-pool')
 var shaders       = require('./lib/shaders')
 var closestPoint  = require('./lib/closest-point')
 
@@ -17,6 +19,7 @@ var wireShader    = shaders.wireShader
 var pointShader   = shaders.pointShader
 var pickShader    = shaders.pickShader
 var pointPickShader = shaders.pointPickShader
+var contourShader = shaders.contourShader
 
 var identityMatrix = [
   1,0,0,0,
@@ -31,6 +34,7 @@ function SimplicialMesh(gl
   , pointShader
   , pickShader
   , pointPickShader
+  , contourShader
   , trianglePositions
   , triangleIds
   , triangleColors
@@ -47,11 +51,14 @@ function SimplicialMesh(gl
   , pointColors
   , pointUVs
   , pointSizes
-  , pointVAO) {
+  , pointVAO
+  , contourPositions
+  , contourVAO) {
   
   this.gl                = gl
   this.cells             = []
   this.positions         = []
+  this.intensity         = []
   this.texture           = texture
   this.dirty             = true
 
@@ -60,6 +67,7 @@ function SimplicialMesh(gl
   this.pointShader       = pointShader
   this.pickShader        = pickShader
   this.pointPickShader   = pointPickShader
+  this.contourShader     = contourShader
 
   this.trianglePositions = trianglePositions
   this.triangleColors    = triangleColors
@@ -85,6 +93,13 @@ function SimplicialMesh(gl
   this.pointVAO          = pointVAO
   this.pointCount        = 0
 
+  this.contourLineWidth  = 1
+  this.contourPositions  = contourPositions
+  this.contourVAO        = contourVAO
+  this.contourCount      = 0
+  this.contourColor      = [0,0,0]
+  this.contourEnable     = true
+
   this.pickId            = 1
   this.bounds            = [
     [ Infinity, Infinity, Infinity], 
@@ -99,7 +114,7 @@ function SimplicialMesh(gl
   this.specularLight = 2.0
   this.roughness     = 0.5
   this.fresnel       = 1.5
-  
+
   this.opacity       = 1.0
 
   this._model       = identityMatrix
@@ -143,12 +158,77 @@ function genColormap(param) {
   return ndarray(result, [256,256,4], [4,0,1])
 }
 
+function unpackIntensity(cells, numVerts, cellIntensity) {
+  var result = new Array(numVerts)
+  for(var i=0; i<numVerts; ++i) {
+    result[i] = 0
+  }
+  var numCells = cells.length
+  for(var i=0; i<numCells; ++i) {
+    var c = cells[i]
+    for(var j=0; j<c.length; ++j) {
+      result[c[j]] = cellIntensity[i]
+    }
+  }
+  return result
+}
+
+function takeZComponent(array) {
+  var n = array.length
+  var result = new Array(n)
+  for(var i=0; i<n; ++i) {
+    result[i] = array[i][2]
+  }
+  return result
+}
+
+proto.highlight = function(selection) {
+  if(!selection || !this.contourEnable) {
+    this.contourCount = 0
+    return
+  }
+  var level = getContour(this.cells, this.intensity, selection.intensity)
+  var cells         = level.cells
+  var vertexIds     = level.vertexIds
+  var vertexWeights = level.vertexWeights
+  var numCells = cells.length
+  var result = pool.mallocFloat32(2 * 3 * numCells)
+  var ptr = 0
+  for(var i=0; i<numCells; ++i) {
+    var c = cells[i]
+    for(var j=0; j<2; ++j) {
+      var v = c[0]
+      if(c.length === 2) {
+        v = c[j]
+      }
+      var a = vertexIds[v][0]
+      var b = vertexIds[v][1]
+      var w = vertexWeights[v]
+      var wi = 1.0 - w
+      var pa = this.positions[a]
+      var pb = this.positions[b]
+      for(var k=0; k<3; ++k) {
+        result[ptr++] = w * pa[k] + wi * pb[k]
+      }
+    }
+  }
+  this.contourCount = (ptr / 3)|0
+  this.contourPositions.update(result.subarray(0, ptr))
+  pool.free(result)
+}
+
 proto.update = function(params) {
   params = params || {}
   var gl = this.gl
 
   this.dirty = true
-  
+
+  if('contourEnable' in params) {
+    this.contourEnable = params.contourEnable
+  }
+  if('contourColor' in params) {
+    this.contourColor = params.contourColor
+  }
   if('lineWidth' in params) {
     this.lineWidth = params.lineWidth
   }
@@ -238,6 +318,14 @@ proto.update = function(params) {
         intensityHi = Math.max(intensityHi, f)
       }
     }
+  }
+
+  if(vertexIntensity) {
+    this.intensity = vertexIntensity
+  } else if(cellIntensity) {
+    this.intensity = unpackIntensity(cells, positions.length, cellIntensity)
+  } else {
+    this.intensity = takeZComponent(positions)
   }
 
   //Point size
@@ -506,6 +594,8 @@ proto.drawTransparent = proto.draw = function(params) {
 
     opacity:  this.opacity,
 
+    contourColor: this.contourColor,
+
     texture:    0
   }
 
@@ -542,7 +632,7 @@ proto.drawTransparent = proto.draw = function(params) {
     this.triangleVAO.unbind()
   }
   
-  if(this.edgeCount > 0) {
+  if(this.edgeCount > 0 && this.lineWidth > 0) {
     var shader = this.lineShader
     shader.bind()
     shader.uniforms = uniforms
@@ -562,8 +652,17 @@ proto.drawTransparent = proto.draw = function(params) {
     gl.drawArrays(gl.POINTS, 0, this.pointCount)
     this.pointVAO.unbind()
   }
-}
 
+  if(this.contourEnable && this.contourCount > 0 && this.contourLineWidth > 0) {
+    var shader = this.contourShader
+    shader.bind()
+    shader.uniforms = uniforms
+
+    this.contourVAO.bind()
+    gl.drawArrays(gl.LINES, 0, this.contourCount)
+    this.contourVAO.unbind()
+  }
+}
 
 proto.drawPick = function(params) {
   params = params || {}
@@ -652,11 +751,18 @@ proto.pick = function(pickData) {
     return null
   }
 
+  var weights = data[2]
+  var interpIntensity = 0.0
+  for(var i=0; i<cell.length; ++i) {
+    interpIntensity += weights[i] * this.intensity[cell[i]]
+  }
+
   return {
     position: data[1],
     index:    cell[data[0]],
     cell:     cell,
-    cellId:   cellId
+    cellId:   cellId,
+    intensity:  interpIntensity
   }
 }
 
@@ -689,6 +795,10 @@ proto.dispose = function() {
   this.pointUVs.dispose()
   this.pointSizes.dispose()
   this.pointIds.dispose()
+
+  this.contourVAO.dispose()
+  this.contourPoints.dispose()
+  this.contourShader.dispose()
 }
 
 function createMeshShader(gl) {
@@ -732,6 +842,12 @@ function createPointPickShader(gl) {
   return shader
 }
 
+function createContourShader(gl) {
+  var shader = createShader(gl, contourShader)
+  shader.attributes.position.location = 0
+  return shader
+}
+
 function createSimplicialMesh(params) {
   var gl = params.gl
 
@@ -740,6 +856,7 @@ function createSimplicialMesh(params) {
   var pointShader     = createPointShader(gl)
   var pickShader      = createPickShader(gl)
   var pointPickShader = createPointPickShader(gl)
+  var contourShader   = createContourShader(gl)
 
   var meshTexture       = createTexture(gl, 
     ndarray(new Uint8Array([255,255,255,255]), [1,1,4]))
@@ -828,6 +945,13 @@ function createSimplicialMesh(params) {
       size: 1
     }
   ])
+
+  var contourPositions = createBuffer(gl)
+  var contourVAO       = createVAO(gl, [
+    { buffer: contourPositions,
+      type:   gl.FLOAT,
+      size:   3
+    }])
   
   var mesh = new SimplicialMesh(gl
     , meshTexture
@@ -836,6 +960,7 @@ function createSimplicialMesh(params) {
     , pointShader
     , pickShader
     , pointPickShader
+    , contourShader
     , trianglePositions
     , triangleIds
     , triangleColors
@@ -852,7 +977,9 @@ function createSimplicialMesh(params) {
     , pointColors
     , pointUVs
     , pointSizes
-    , pointVAO)
+    , pointVAO
+    , contourPositions
+    , contourVAO)
   
   mesh.update(params)
   

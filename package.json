@@ -18,7 +18,9 @@
     "glslify": "^1.6.0",
     "ndarray": "^1.0.15",
     "normals": "^1.0.0",
-    "polytope-closest-point": "^1.0.0"
+    "polytope-closest-point": "^1.0.0",
+    "simplicial-complex-contour": "^1.0.0",
+    "typedarray-pool": "^1.1.0"
   },
   "devDependencies": {
     "3d-view-controls": "^1.0.1",
