@@ -762,7 +762,8 @@ proto.pick = function(pickData) {
     index:    cell[data[0]],
     cell:     cell,
     cellId:   cellId,
-    intensity:  interpIntensity
+    intensity:  interpIntensity,
+    dataCoordinate: this.positions[cell[data[0]]]
   }
 }
 
