@@ -798,7 +798,7 @@ proto.dispose = function() {
   this.pointIds.dispose()
 
   this.contourVAO.dispose()
-  this.contourPoints.dispose()
+  this.contourPositions.dispose()
   this.contourShader.dispose()
 }
 
