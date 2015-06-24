@@ -1,9 +1,9 @@
 'use strict'
 
+var createShader  = require('gl-shader')
 var createBuffer  = require('gl-buffer')
 var createVAO     = require('gl-vao')
 var createTexture = require('gl-texture2d')
-var createShader  = require('gl-shader')
 var normals       = require('normals')
 var multiply      = require('gl-mat4/multiply')
 var invert        = require('gl-mat4/invert')
@@ -54,7 +54,7 @@ function SimplicialMesh(gl
   , pointVAO
   , contourPositions
   , contourVAO) {
-  
+
   this.gl                = gl
   this.cells             = []
   this.positions         = []
@@ -76,7 +76,7 @@ function SimplicialMesh(gl
   this.triangleIds       = triangleIds
   this.triangleVAO       = triangleVAO
   this.triangleCount     = 0
-  
+
   this.lineWidth         = 1
   this.edgePositions     = edgePositions
   this.edgeColors        = edgeColors
@@ -84,7 +84,7 @@ function SimplicialMesh(gl
   this.edgeIds           = edgeIds
   this.edgeVAO           = edgeVAO
   this.edgeCount         = 0
-  
+
   this.pointPositions    = pointPositions
   this.pointColors       = pointColors
   this.pointUVs          = pointUVs
@@ -102,10 +102,10 @@ function SimplicialMesh(gl
 
   this.pickId            = 1
   this.bounds            = [
-    [ Infinity, Infinity, Infinity], 
+    [ Infinity, Infinity, Infinity],
     [-Infinity,-Infinity,-Infinity] ]
   this.clipBounds        = [
-    [-Infinity,-Infinity,-Infinity], 
+    [-Infinity,-Infinity,-Infinity],
     [ Infinity, Infinity, Infinity] ]
 
   this.lightPosition = [1e5, 1e5, 0]
@@ -145,7 +145,7 @@ function genColormap(param) {
     , nshades:  256
     , format:  'rgba'
   })
-  
+
   var result = new Uint8Array(256*4)
   for(var i=0; i<256; ++i) {
     var c = colors[i]
@@ -235,7 +235,7 @@ proto.update = function(params) {
   if('opacity' in params) {
     this.opacity = params.opacity
   }
-  
+
   if(params.texture) {
     this.texture.dispose()
     this.texture = createTexture(gl, params.texture)
@@ -284,7 +284,7 @@ proto.update = function(params) {
   if(!cellNormals && !vertexNormals) {
     vertexNormals = normals.vertexNormals(cells, positions)
   }
-  
+
   //Compute colors
   var vertexColors    = params.vertexColors
   var cellColors      = params.cellColors
@@ -355,10 +355,10 @@ fill_loop:
     var cell = cells[i]
     switch(cell.length) {
       case 1:
-        
+
         var v = cell[0]
         var p = positions[v]
-        
+
         //Check NaNs
         for(var j=0; j<3; ++j) {
           if(isNaN(p[j]) || !isFinite(p[j])) {
@@ -387,21 +387,21 @@ fill_loop:
           uv = vertexUVs[v]
         } else if(vertexIntensity) {
           uv = [
-            (vertexIntensity[v] - intensityLo) / 
+            (vertexIntensity[v] - intensityLo) /
             (intensityHi - intensityLo), 0]
         } else if(cellUVs) {
           uv = cellUVs[i]
         } else if(cellIntensity) {
           uv = [
-            (cellIntensity[i] - intensityLo) / 
+            (cellIntensity[i] - intensityLo) /
             (intensityHi - intensityLo), 0]
         } else {
           uv = [
-            (p[2] - intensityLo) / 
+            (p[2] - intensityLo) /
             (intensityHi - intensityLo), 0]
         }
         pUVs.push(uv[0], uv[1])
-        
+
         if(pointSizes) {
           pSiz.push(pointSizes[v])
         } else {
@@ -412,7 +412,7 @@ fill_loop:
 
         pointCount += 1
       break
-      
+
       case 2:
 
         //Check NaNs
@@ -446,22 +446,22 @@ fill_loop:
             eCol.push(c[0], c[1], c[2], c[3])
           }
 
-          var uv            
+          var uv
           if(vertexUVs) {
             uv = vertexUVs[v]
           } else if(vertexIntensity) {
             uv = [
-              (vertexIntensity[v] - intensityLo) / 
+              (vertexIntensity[v] - intensityLo) /
               (intensityHi - intensityLo), 0]
           } else if(cellUVs) {
             uv = cellUVs[i]
           } else if(cellIntensity) {
             uv = [
-              (cellIntensity[i] - intensityLo) / 
+              (cellIntensity[i] - intensityLo) /
               (intensityHi - intensityLo), 0]
           } else {
             uv = [
-              (p[2] - intensityLo) / 
+              (p[2] - intensityLo) /
               (intensityHi - intensityLo), 0]
           }
           eUVs.push(uv[0], uv[1])
@@ -470,7 +470,7 @@ fill_loop:
         }
         edgeCount += 1
       break
-      
+
       case 3:
         //Check NaNs
         for(var j=0; j<3; ++j) {
@@ -490,7 +490,7 @@ fill_loop:
           tPos.push(p[0], p[1], p[2])
 
           var c
-          if(vertexColors) { 
+          if(vertexColors) {
             c = vertexColors[v]
           } else if(cellColors) {
             c = cellColors[i]
@@ -503,22 +503,22 @@ fill_loop:
             tCol.push(c[0], c[1], c[2], c[3])
           }
 
-          var uv            
+          var uv
           if(vertexUVs) {
             uv = vertexUVs[v]
           } else if(vertexIntensity) {
             uv = [
-              (vertexIntensity[v] - intensityLo) / 
+              (vertexIntensity[v] - intensityLo) /
               (intensityHi - intensityLo), 0]
           } else if(cellUVs) {
             uv = cellUVs[i]
           } else if(cellIntensity) {
             uv = [
-              (cellIntensity[i] - intensityLo) / 
+              (cellIntensity[i] - intensityLo) /
               (intensityHi - intensityLo), 0]
           } else {
             uv = [
-              (p[2] - intensityLo) / 
+              (p[2] - intensityLo) /
               (intensityHi - intensityLo), 0]
           }
           tUVs.push(uv[0], uv[1])
@@ -535,7 +535,7 @@ fill_loop:
         }
         triangleCount += 1
       break
-      
+
       default:
       break
     }
@@ -544,7 +544,7 @@ fill_loop:
   this.pointCount     = pointCount
   this.edgeCount      = edgeCount
   this.triangleCount  = triangleCount
-  
+
   this.pointPositions.update(pPos)
   this.pointColors.update(pCol)
   this.pointUVs.update(pUVs)
@@ -555,12 +555,12 @@ fill_loop:
   this.edgeColors.update(eCol)
   this.edgeUVs.update(eUVs)
   this.edgeIds.update(new Uint32Array(eIds))
-  
+
   this.trianglePositions.update(tPos)
   this.triangleColors.update(tCol)
   this.triangleUVs.update(tUVs)
   this.triangleNormals.update(tNor)
-  this.triangleIds.update(new Uint32Array(tIds)) 
+  this.triangleIds.update(new Uint32Array(tIds))
 }
 
 proto.drawTransparent = proto.draw = function(params) {
@@ -580,7 +580,7 @@ proto.drawTransparent = proto.draw = function(params) {
     model:      model,
     view:       view,
     projection: projection,
-    
+
     clipBounds: clipBounds,
 
     kambient:   this.ambientLight,
@@ -600,7 +600,7 @@ proto.drawTransparent = proto.draw = function(params) {
   }
 
   this.texture.bind(0)
-  
+
   var invCameraMatrix = new Array(16)
   multiply(invCameraMatrix, uniforms.view, uniforms.model)
   multiply(invCameraMatrix, uniforms.projection, invCameraMatrix)
@@ -631,7 +631,7 @@ proto.drawTransparent = proto.draw = function(params) {
     gl.drawArrays(gl.TRIANGLES, 0, this.triangleCount*3)
     this.triangleVAO.unbind()
   }
-  
+
   if(this.edgeCount > 0 && this.lineWidth > 0) {
     var shader = this.lineShader
     shader.bind()
@@ -642,7 +642,7 @@ proto.drawTransparent = proto.draw = function(params) {
     gl.drawArrays(gl.LINES, 0, this.edgeCount*2)
     this.edgeVAO.unbind()
   }
-  
+
   if(this.pointCount > 0) {
     var shader = this.pointShader
     shader.bind()
@@ -702,14 +702,14 @@ proto.drawPick = function(params) {
     gl.drawArrays(gl.TRIANGLES, 0, this.triangleCount*3)
     this.triangleVAO.unbind()
   }
-  
+
   if(this.edgeCount > 0) {
     this.edgeVAO.bind()
     gl.lineWidth(this.lineWidth)
     gl.drawArrays(gl.LINES, 0, this.edgeCount*2)
     this.edgeVAO.unbind()
   }
-  
+
   if(this.pointCount > 0) {
     var shader = this.pointPickShader
     shader.bind()
@@ -740,11 +740,11 @@ proto.pick = function(pickData) {
   }
 
   var data = closestPoint(
-    simplex, 
-    [pickData.coord[0], this._resolution[1]-pickData.coord[1]], 
-    this._model, 
-    this._view, 
-    this._projection, 
+    simplex,
+    [pickData.coord[0], this._resolution[1]-pickData.coord[1]],
+    this._model,
+    this._view,
+    this._projection,
     this._resolution)
 
   if(!data) {
@@ -859,7 +859,7 @@ function createSimplicialMesh(params) {
   var pointPickShader = createPointPickShader(gl)
   var contourShader   = createContourShader(gl)
 
-  var meshTexture       = createTexture(gl, 
+  var meshTexture       = createTexture(gl,
     ndarray(new Uint8Array([255,255,255,255]), [1,1,4]))
   meshTexture.generateMipmap()
   meshTexture.minFilter = gl.LINEAR_MIPMAP_LINEAR
@@ -893,7 +893,7 @@ function createSimplicialMesh(params) {
       size: 3
     }
   ])
-  
+
   var edgePositions = createBuffer(gl)
   var edgeColors    = createBuffer(gl)
   var edgeUVs       = createBuffer(gl)
@@ -917,7 +917,7 @@ function createSimplicialMesh(params) {
       size: 2
     }
   ])
-  
+
   var pointPositions  = createBuffer(gl)
   var pointColors     = createBuffer(gl)
   var pointUVs        = createBuffer(gl)
@@ -953,7 +953,7 @@ function createSimplicialMesh(params) {
       type:   gl.FLOAT,
       size:   3
     }])
-  
+
   var mesh = new SimplicialMesh(gl
     , meshTexture
     , triShader
@@ -981,9 +981,9 @@ function createSimplicialMesh(params) {
     , pointVAO
     , contourPositions
     , contourVAO)
-  
+
   mesh.update(params)
-  
+
   return mesh
 }
 
