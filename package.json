@@ -1,6 +1,6 @@
 {
   "name": "gl-mesh3d",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "3D mesh drawing",
   "main": "mesh.js",
   "directories": {
@@ -22,8 +22,7 @@
     "simplicial-complex-contour": "^1.0.0",
     "typedarray-pool": "^1.1.0"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
