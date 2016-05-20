@@ -297,7 +297,7 @@ proto.update = function(params) {
   var vertexNormals = params.vertexNormals
   var cellNormals   = params.cellNormals
   var vertexNormalsEpsilon = params.vertexNormalsEpsilon === void(0) ? DEFAULT_VERTEX_NORMALS_EPSILON : params.vertexNormalsEpsilon
-  var faceNormalsEpsilon = params.faceNormalsEpsilon === void(0) ? DEFAULT_FACE_NORMALS_EPSILON : params.vertexNormalsEpsilon
+  var faceNormalsEpsilon = params.faceNormalsEpsilon === void(0) ? DEFAULT_FACE_NORMALS_EPSILON : params.faceNormalsEpsilon
   if(params.useFacetNormals && !cellNormals) {
     cellNormals = normals.faceNormals(cells, positions, faceNormalsEpsilon)
   }
