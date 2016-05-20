@@ -1,6 +1,6 @@
 {
   "name": "gl-mesh3d",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "3D mesh drawing",
   "main": "mesh.js",
   "directories": {
@@ -17,7 +17,7 @@
     "glsl-specular-cook-torrance": "^2.0.1",
     "glslify": "^2.1.2",
     "ndarray": "^1.0.15",
-    "normals": "^1.0.0",
+    "normals": "^1.0.1",
     "polytope-closest-point": "^1.0.0",
     "simplicial-complex-contour": "^1.0.0",
     "typedarray-pool": "^1.1.0"

@@ -1,5 +1,8 @@
 'use strict'
 
+var DEFAULT_VERTEX_NORMALS_EPSILON = 1e-6; // may be too large if triangles are very small
+var DEFAULT_FACE_NORMALS_EPSILON = 1e-6;
+
 var createShader  = require('gl-shader')
 var createBuffer  = require('gl-buffer')
 var createVAO     = require('gl-vao')
@@ -235,6 +238,21 @@ proto.update = function(params) {
   if('opacity' in params) {
     this.opacity = params.opacity
   }
+  if('ambient' in params) {
+    this.ambientLight  = params.ambient
+  }
+  if('diffuse' in params) {
+    this.diffuseLight = params.diffuse
+  }
+  if('specular' in params) {
+    this.specularLight = params.specular
+  }
+  if('roughness' in params) {
+    this.roughness = params.roughness
+  }
+  if('fresnel' in params) {
+    this.fresnel = params.fresnel
+  }
 
   if(params.texture) {
     this.texture.dispose()
@@ -278,11 +296,13 @@ proto.update = function(params) {
   //Compute normals
   var vertexNormals = params.vertexNormals
   var cellNormals   = params.cellNormals
+  var vertexNormalsEpsilon = params.vertexNormalsEpsilon === void(0) ? DEFAULT_VERTEX_NORMALS_EPSILON : params.vertexNormalsEpsilon
+  var faceNormalsEpsilon = params.faceNormalsEpsilon === void(0) ? DEFAULT_FACE_NORMALS_EPSILON : params.faceNormalsEpsilon
   if(params.useFacetNormals && !cellNormals) {
-    cellNormals = normals.faceNormals(cells, positions)
+    cellNormals = normals.faceNormals(cells, positions, faceNormalsEpsilon)
   }
   if(!cellNormals && !vertexNormals) {
-    vertexNormals = normals.vertexNormals(cells, positions)
+    vertexNormals = normals.vertexNormals(cells, positions, vertexNormalsEpsilon)
   }
 
   //Compute colors
