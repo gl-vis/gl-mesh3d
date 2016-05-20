@@ -235,6 +235,21 @@ proto.update = function(params) {
   if('opacity' in params) {
     this.opacity = params.opacity
   }
+  if('ambient' in params) {
+    this.ambientLight  = params.ambient
+  }
+  if('diffuse' in params) {
+    this.diffuseLight = params.diffuse
+  }
+  if('specular' in params) {
+    this.specularLight = params.specular
+  }
+  if('roughness' in params) {
+    this.roughness = params.roughness
+  }
+  if('fresnel' in params) {
+    this.fresnel = params.fresnel
+  }
 
   if(params.texture) {
     this.texture.dispose()
