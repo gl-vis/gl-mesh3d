@@ -87,6 +87,12 @@ Mesh surface roughness
 #### `mesh.fresnel`
 Fresnel parameter
 
+#### `mesh.vertexNormalsEpsilon`
+Epsilon for vertex normals calculation
+
+#### `mesh.faceNormalsEpsilon`
+Epsilon for face normals calculation
+
 #### `mesh.opacity`
 Opacity
 
