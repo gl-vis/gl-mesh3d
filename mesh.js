@@ -235,6 +235,9 @@ proto.update = function(params) {
   if('lineWidth' in params) {
     this.lineWidth = params.lineWidth
   }
+  if('lightPosition' in params) {
+    this.lightPosition = params.lightPosition
+  }
   if('opacity' in params) {
     this.opacity = params.opacity
   }

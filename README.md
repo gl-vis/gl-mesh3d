@@ -72,6 +72,9 @@ Updates the contents of the simplicial complex in place.
 
 ## Properties
 
+#### `mesh.lightPosition`
+The 3D position of the directional light source
+
 #### `mesh.ambientLight`
 Ambient light color
 
@@ -86,6 +89,12 @@ Mesh surface roughness
 
 #### `mesh.fresnel`
 Fresnel parameter
+
+#### `mesh.vertexNormalsEpsilon`
+Epsilon for vertex normals calculation
+
+#### `mesh.faceNormalsEpsilon`
+Epsilon for face normals calculation
 
 #### `mesh.opacity`
 Opacity
