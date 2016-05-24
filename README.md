@@ -72,6 +72,9 @@ Updates the contents of the simplicial complex in place.
 
 ## Properties
 
+#### `mesh.lightPosition`
+The 3D position of the directional light source
+
 #### `mesh.ambientLight`
 Ambient light color
 
