@@ -826,7 +826,7 @@ proto.dispose = function() {
 }
 
 function createMeshShader(gl) {
-  var shader = createShader(gl, meshShader)
+  var shader = createShader(gl, meshShader.vertex, meshShader.fragment)
   shader.attributes.position.location = 0
   shader.attributes.color.location    = 2
   shader.attributes.uv.location       = 3
@@ -835,7 +835,7 @@ function createMeshShader(gl) {
 }
 
 function createWireShader(gl) {
-  var shader = createShader(gl, wireShader)
+  var shader = createShader(gl, wireShader.vertex, wireShader.fragment)
   shader.attributes.position.location = 0
   shader.attributes.color.location    = 2
   shader.attributes.uv.location       = 3
@@ -843,7 +843,7 @@ function createWireShader(gl) {
 }
 
 function createPointShader(gl) {
-  var shader = createShader(gl, pointShader)
+  var shader = createShader(gl, pointShader.vertex, pointShader.fragment)
   shader.attributes.position.location  = 0
   shader.attributes.color.location     = 2
   shader.attributes.uv.location        = 3
@@ -852,14 +852,14 @@ function createPointShader(gl) {
 }
 
 function createPickShader(gl) {
-  var shader = createShader(gl, pickShader)
+  var shader = createShader(gl, pickShader.vertex, pickShader.fragment)
   shader.attributes.position.location = 0
   shader.attributes.id.location       = 1
   return shader
 }
 
 function createPointPickShader(gl) {
-  var shader = createShader(gl, pointPickShader)
+  var shader = createShader(gl, pointPickShader.vertex, pointPickShader.fragment)
   shader.attributes.position.location  = 0
   shader.attributes.id.location        = 1
   shader.attributes.pointSize.location = 4
@@ -867,13 +867,16 @@ function createPointPickShader(gl) {
 }
 
 function createContourShader(gl) {
-  var shader = createShader(gl, contourShader)
+  var shader = createShader(gl, contourShader.vertex, contourShader.fragment)
   shader.attributes.position.location = 0
   return shader
 }
 
-function createSimplicialMesh(params) {
-  var gl = params.gl
+function createSimplicialMesh(gl, params) {
+  if (arguments.length === 1) {
+    params = gl;
+    gl = params.gl;
+  }
 
   var triShader       = createMeshShader(gl)
   var lineShader      = createWireShader(gl)

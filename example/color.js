@@ -2,8 +2,8 @@ var createCamera = require('3d-view-controls')
 var getBounds    = require('bound-points')
 var bunny        = require('bunny')
 var perspective  = require('gl-mat4/perspective')
-var createAxes   = require('gl-axes')
-var createSpikes = require('gl-spikes')
+var createAxes   = require('gl-axes3d')
+var createSpikes = require('gl-spikes3d')
 var createSelect = require('gl-select-static')
 var getBounds    = require('bound-points')
 var mouseChange  = require('mouse-change')
@@ -17,7 +17,7 @@ var gl = canvas.getContext('webgl')
 var bounds = getBounds(bunny.positions)
 var camera = createCamera(canvas, {
   eye:    [0,0,50],
-  center: [-0.5*(bounds[0][0]+bounds[1][0]), 
+  center: [-0.5*(bounds[0][0]+bounds[1][0]),
            -0.5*(bounds[0][1]+bounds[1][1]),
            -0.5*(bounds[0][2]+bounds[1][2])],
   zoomMax: 500
@@ -29,7 +29,7 @@ var mesh = createMesh(gl, {
 })
 var select = createSelect(gl, [canvas.width, canvas.height])
 var axes = createAxes(gl, { bounds: bounds })
-var spikes = createSpikes(gl, { 
+var spikes = createSpikes(gl, {
   bounds: bounds
 })
 var spikeChanged = false

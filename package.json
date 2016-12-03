@@ -22,7 +22,15 @@
     "simplicial-complex-contour": "^1.0.0",
     "typedarray-pool": "^1.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "3d-view-controls": "^2.1.1",
+    "bound-points": "^1.0.0",
+    "bunny": "^1.0.1",
+    "canvas-fit": "^1.5.0",
+    "gl-axes3d": "^1.2.5",
+    "gl-select-static": "^2.0.2",
+    "gl-spikes3d": "^1.0.5"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
