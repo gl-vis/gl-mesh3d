@@ -13,8 +13,7 @@ uniform vec3 eyePosition
 varying vec3 f_normal
            , f_lightDirection
            , f_eyeDirection
-           , f_data
-           , f_position;
+           , f_data;
 varying vec4 f_color;
 varying vec2 f_uv;
 
@@ -25,7 +24,6 @@ void main() {
   f_color          = color;
   f_normal         = normal;
   f_data           = position;
-  f_position       = -t_position.xyz;
   f_eyeDirection   = eyePosition   - position;
   f_lightDirection = lightPosition - position;
   f_uv             = uv;

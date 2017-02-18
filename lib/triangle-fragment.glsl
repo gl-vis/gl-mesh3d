@@ -17,8 +17,7 @@ uniform sampler2D texture;
 varying vec3 f_normal
            , f_lightDirection
            , f_eyeDirection
-           , f_data
-           , f_position;
+           , f_data;
 varying vec4 f_color;
 varying vec2 f_uv;
 
@@ -32,7 +31,7 @@ void main() {
   vec3 L = normalize(f_lightDirection);
   vec3 V = normalize(f_eyeDirection);
 
-  vec3 normal = faceNormal(f_position);
+  vec3 normal = faceNormal(f_data);
 
   if (dot(N, normal) < 0.0) {
       N = -N;
