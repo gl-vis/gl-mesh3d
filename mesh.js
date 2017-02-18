@@ -878,6 +878,11 @@ function createSimplicialMesh(gl, params) {
     gl = params.gl;
   }
 
+  //enable derivatives for face normals
+  var ext = gl.getExtension('OES_standard_derivatives')
+  if (!ext)
+    throw new Error('derivatives not supported')
+
   var triShader       = createMeshShader(gl)
   var lineShader      = createWireShader(gl)
   var pointShader     = createPointShader(gl)
