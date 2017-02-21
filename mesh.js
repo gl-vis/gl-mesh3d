@@ -879,7 +879,7 @@ function createSimplicialMesh(gl, params) {
   }
 
   //enable derivatives for face normals
-  var ext = gl.getExtension('OES_standard_derivatives')
+  var ext = gl.getExtension('OES_standard_derivatives') || gl.getExtension('MOZ_OES_standard_derivatives') || gl.getExtension('WEBKIT_OES_standard_derivatives')
   if (!ext)
     throw new Error('derivatives not supported')
 
