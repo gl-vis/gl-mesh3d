@@ -33,7 +33,7 @@ void main() {
 
   vec3 normal = faceNormal(f_data);
 
-  if (dot(N, normal) < 0.0) {
+  if (dot(N, normal) >= 0.0) {
       N = -N;
   }
 
