@@ -45,6 +45,8 @@ Creates a simplicial complex that can be drawn directly in a WebGL context.
     + `vertexUVs`
     + `cellUVs`
     + `vertexIntensity`
+    + `colormap`
+    + `vertexIntensityBounds` intensity range for the colormap
     + `cellIntensity`
     + `cellColors` A list of per cell color attributes
     + `meshColor` A constant color for the entire mesh
