@@ -11,7 +11,7 @@
     "colormap": "^2.1.0",
     "gl-buffer": "^2.0.8",
     "gl-mat4": "^1.0.0",
-    "gl-shader": "^4.0.5",
+    "gl-shader": "4.2.0",
     "gl-texture2d": "^2.0.8",
     "gl-vao": "^1.1.3",
     "glsl-specular-cook-torrance": "^2.0.1",
