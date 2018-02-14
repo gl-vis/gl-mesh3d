@@ -324,10 +324,15 @@ proto.update = function(params) {
   var intensityHi     = -Infinity
   if(!vertexUVs && !cellUVs) {
     if(vertexIntensity) {
-      for(var i=0; i<vertexIntensity.length; ++i) {
-        var f = vertexIntensity[i]
-        intensityLo = Math.min(intensityLo, f)
-        intensityHi = Math.max(intensityHi, f)
+      if(params.vertexIntensityBounds) {
+        intensityLo = +params.vertexIntensityBounds[0]
+        intensityHi = +params.vertexIntensityBounds[1]
+      } else {
+        for(var i=0; i<vertexIntensity.length; ++i) {
+          var f = vertexIntensity[i]
+          intensityLo = Math.min(intensityLo, f)
+          intensityHi = Math.max(intensityHi, f)
+        }
       }
     } else if(cellIntensity) {
       for(var i=0; i<cellIntensity.length; ++i) {
