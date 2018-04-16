@@ -14,6 +14,10 @@ document.body.appendChild(canvas)
 window.addEventListener('resize', require('canvas-fit')(canvas))
 var gl = canvas.getContext('webgl')
 
+var ext = (
+  gl.getExtension('OES_standard_derivatives')
+)
+
 var bounds = getBounds(bunny.positions)
 var camera = createCamera(canvas, {
   eye:    [0,0,50],
@@ -26,7 +30,8 @@ var mesh = createMesh(gl, {
   cells:      bunny.cells,
   positions:  bunny.positions,
   meshColor:  [1, 0, 0],
-  useFacetNormals: true
+  useFacetNormals: true,
+  specular: 5.
 })
 var select = createSelect(gl, [canvas.width, canvas.height])
 var axes = createAxes(gl, { bounds: bounds })

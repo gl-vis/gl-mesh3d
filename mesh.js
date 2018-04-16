@@ -30,6 +30,7 @@ var identityMatrix = [
   0,0,1,0,
   0,0,0,1]
 
+
 function SimplicialMesh(gl
   , texture
   , triShader
@@ -882,6 +883,11 @@ function createSimplicialMesh(gl, params) {
     params = gl;
     gl = params.gl;
   }
+
+  //enable derivatives for face normals
+  var ext = gl.getExtension('OES_standard_derivatives') || gl.getExtension('MOZ_OES_standard_derivatives') || gl.getExtension('WEBKIT_OES_standard_derivatives')
+  if (!ext)
+    throw new Error('derivatives not supported')
 
   var triShader       = createMeshShader(gl)
   var lineShader      = createWireShader(gl)
