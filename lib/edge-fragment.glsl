@@ -15,9 +15,9 @@ bool outOfRange(float a, float b, float p) {
 }
 
 void main() {
-  if (outOfRange(clipBounds[0].x, clipBounds[1].x, f_data.x)) discard;
-  if (outOfRange(clipBounds[0].y, clipBounds[1].y, f_data.y)) discard;
-  if (outOfRange(clipBounds[0].z, clipBounds[1].z, f_data.z)) discard;
+  if ((outOfRange(clipBounds[0].x, clipBounds[1].x, f_data.x)) ||
+      (outOfRange(clipBounds[0].y, clipBounds[1].y, f_data.y)) ||
+      (outOfRange(clipBounds[0].z, clipBounds[1].z, f_data.z))) discard;
 
   gl_FragColor = f_color * texture2D(texture, f_uv) * opacity;
 }
