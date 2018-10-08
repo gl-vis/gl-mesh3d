@@ -4,6 +4,7 @@ precision highp float;
 
 #pragma glslify: cookTorrance = require(glsl-specular-cook-torrance)
 #pragma glslify: faceNormal = require('glsl-face-normal')
+#pragma glslify: outOfRange = require(./reversed-scenes-out-of-range.glsl)
 
 uniform vec3 clipBounds[2];
 uniform float roughness
@@ -21,12 +22,6 @@ varying vec3 f_normal
 varying vec4 f_color;
 varying vec2 f_uv;
 
-bool outOfRange(float a, float b, float p) {
-  if (p > max(a, b)) return true;
-  if (p < min(a, b)) return true;
-  return false;
-}
-
 void main() {
   if ((outOfRange(clipBounds[0].x, clipBounds[1].x, f_data.x)) ||
       (outOfRange(clipBounds[0].y, clipBounds[1].y, f_data.y)) ||
@@ -37,7 +32,7 @@ void main() {
   vec3 V = normalize(f_eyeDirection);
 
   vec3 normal = faceNormal(f_data);
-  
+
   if (dot(N, normal) < 0.0) {
     N = -N;
   }

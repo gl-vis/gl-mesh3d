@@ -1,5 +1,7 @@
 precision mediump float;
 
+#pragma glslify: outOfRange = require(./reversed-scenes-out-of-range.glsl)
+
 attribute vec3  position;
 attribute float pointSize;
 attribute vec4  id;
@@ -9,12 +11,6 @@ uniform vec3 clipBounds[2];
 
 varying vec3 f_position;
 varying vec4 f_id;
-
-bool outOfRange(float a, float b, float p) {
-  if (p > max(a, b)) return true;
-  if (p < min(a, b)) return true;
-  return false;
-}
 
 void main() {
   if ((outOfRange(clipBounds[0].x, clipBounds[1].x, position.x)) ||
