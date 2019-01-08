@@ -24,7 +24,7 @@ var pickShader    = shaders.pickShader
 var pointPickShader = shaders.pointPickShader
 var contourShader = shaders.contourShader
 
-var identityMatrix = [
+var IDENTITY = [
   1,0,0,0,
   0,1,0,0,
   0,0,1,0,
@@ -121,9 +121,9 @@ function SimplicialMesh(gl
 
   this.opacity       = 1.0
 
-  this._model       = identityMatrix
-  this._view        = identityMatrix
-  this._projection  = identityMatrix
+  this._model       = IDENTITY
+  this._view        = IDENTITY
+  this._projection  = IDENTITY
   this._resolution  = [1,1]
 }
 
@@ -595,9 +595,9 @@ fill_loop:
 proto.drawTransparent = proto.draw = function(params) {
   params = params || {}
   var gl          = this.gl
-  var model       = params.model      || identityMatrix
-  var view        = params.view       || identityMatrix
-  var projection  = params.projection || identityMatrix
+  var model       = params.model      || IDENTITY
+  var view        = params.view       || IDENTITY
+  var projection  = params.projection || IDENTITY
 
   var clipBounds = [[-1e6,-1e6,-1e6],[1e6,1e6,1e6]]
   for(var i=0; i<3; ++i) {
@@ -609,6 +609,7 @@ proto.drawTransparent = proto.draw = function(params) {
     model:      model,
     view:       view,
     projection: projection,
+    inverseModel: IDENTITY.slice(),
 
     clipBounds: clipBounds,
 
@@ -627,6 +628,8 @@ proto.drawTransparent = proto.draw = function(params) {
 
     texture:    0
   }
+
+  uniforms.inverseModel = invert(uniforms.inverseModel, uniforms.model)
 
   this.texture.bind(0)
 
@@ -698,9 +701,9 @@ proto.drawPick = function(params) {
 
   var gl         = this.gl
 
-  var model      = params.model      || identityMatrix
-  var view       = params.view       || identityMatrix
-  var projection = params.projection || identityMatrix
+  var model      = params.model      || IDENTITY
+  var view       = params.view       || IDENTITY
+  var projection = params.projection || IDENTITY
 
   var clipBounds = [[-1e6,-1e6,-1e6],[1e6,1e6,1e6]]
   for(var i=0; i<3; ++i) {

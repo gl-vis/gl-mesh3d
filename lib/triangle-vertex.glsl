@@ -6,7 +6,8 @@ attribute vec2 uv;
 
 uniform mat4 model
            , view
-           , projection;
+           , projection
+           , inverseModel;
 uniform vec3 eyePosition
            , lightPosition;
 
@@ -17,14 +18,21 @@ varying vec3 f_normal
 varying vec4 f_color;
 varying vec2 f_uv;
 
+vec4 project(vec3 p) {
+  return projection * view * model * vec4(p, 1.0);
+}
+
 void main() {
-  vec4 m_position  = model * vec4(position, 1.0);
-  vec4 t_position  = view * m_position;
-  gl_Position      = projection * t_position;
+  gl_Position      = project(position);
+
+  //Lighting geometry parameters
+  vec4 cameraCoordinate = view * vec4(position , 1.0);
+  cameraCoordinate.xyz /= cameraCoordinate.w;
+  f_lightDirection = lightPosition - cameraCoordinate.xyz;
+  f_eyeDirection   = eyePosition - cameraCoordinate.xyz;
+  f_normal  = normalize((vec4(normal,0) * inverseModel).xyz);
+
   f_color          = color;
-  f_normal         = normal;
   f_data           = position;
-  f_eyeDirection   = eyePosition   - position;
-  f_lightDirection = lightPosition - position;
   f_uv             = uv;
 }
