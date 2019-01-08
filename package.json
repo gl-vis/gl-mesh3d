@@ -29,11 +29,13 @@
     "bound-points": "^1.0.0",
     "bunny": "^1.0.1",
     "canvas-fit": "^1.5.0",
+    "chttps": "^1.0.6",
     "gl-axes3d": "^1.2.5",
     "gl-select-static": "^2.0.2",
     "gl-spikes3d": "^1.0.5"
   },
   "scripts": {
+    "postshrinkwrap": "chttps .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
