@@ -1,6 +1,6 @@
 #extension GL_OES_standard_derivatives : enable
 
-precision highp float;
+precision mediump float;
 
 #pragma glslify: cookTorrance = require(glsl-specular-cook-torrance)
 #pragma glslify: faceNormal = require('glsl-face-normal')
