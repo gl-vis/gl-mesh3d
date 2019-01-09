@@ -17,7 +17,7 @@
     "glsl-face-normal": "^1.0.2",
     "glsl-out-of-range": "^1.0.4",
     "glsl-specular-cook-torrance": "^2.0.1",
-    "glslify": "^6.4.1",
+    "glslify": "^7.0.0",
     "ndarray": "^1.0.15",
     "normals": "^1.0.1",
     "polytope-closest-point": "^1.0.0",
