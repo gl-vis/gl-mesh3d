@@ -513,7 +513,7 @@ fill_loop:
         }
 
         for(var j=0; j<3; ++j) {
-          var v = cell[j]
+          var v = cell[2 - j]
 
           var p = positions[v]
           tPos.push(p[0], p[1], p[2])
@@ -630,6 +630,8 @@ proto.drawTransparent = proto.draw = function(params) {
   }
 
   uniforms.inverseModel = invert(uniforms.inverseModel, uniforms.model)
+
+  gl.disable(gl.CULL_FACE)
 
   this.texture.bind(0)
 

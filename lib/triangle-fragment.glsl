@@ -30,7 +30,7 @@ void main() {
   vec3 L = normalize(f_lightDirection);
   vec3 V = normalize(f_eyeDirection);
 
-  if(!gl_FrontFacing) {
+  if(gl_FrontFacing) {
     N = -N;
   }
 
