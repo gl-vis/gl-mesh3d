@@ -14,7 +14,6 @@
     "gl-shader": "^4.2.1",
     "gl-texture2d": "^2.0.8",
     "gl-vao": "^1.1.3",
-    "glsl-face-normal": "^1.0.2",
     "glsl-out-of-range": "^1.0.4",
     "glsl-specular-cook-torrance": "^2.0.1",
     "glslify": "^7.0.0",
