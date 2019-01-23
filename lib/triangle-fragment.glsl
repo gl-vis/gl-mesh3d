@@ -34,7 +34,7 @@ void main() {
     N = -N;
   }
 
-  float specular = cookTorrance(L, V, N, roughness, fresnel);
+  float specular = max(cookTorrance(L, V, N, roughness, fresnel), 0.);
   //float specular = max(beckmann(L, V, N, roughness), 0.); // used in gl-surface3d
 
   float diffuse  = min(kambient + kdiffuse * max(dot(N, L), 0.0), 1.0);
