@@ -119,7 +119,8 @@ function SimplicialMesh(gl
   this.roughness     = 0.5
   this.fresnel       = 1.5
 
-  this.opacity       = 1.0
+  this.opacity       = 1
+  this.opacityscale  = false
 
   this._model       = IDENTITY
   this._view        = IDENTITY
@@ -134,7 +135,7 @@ proto.isOpaque = function() {
 }
 
 proto.isTransparent = function() {
-  return this.opacity < 1
+  return !this.isOpaque();
 }
 
 proto.pickSlots = 1
@@ -143,7 +144,26 @@ proto.setPickBase = function(id) {
   this.pickId = id
 }
 
-function genColormap(param) {
+function mapOpacity(ratio, opacityscale) {
+
+  if(!opacityscale) return 1; // quick return;
+
+  var r = 1 // default: 'uniform'
+
+  if(opacityscale === 'extremes') {
+    r = 1 - Math.sin(ratio * Math.PI)
+  } else if(opacityscale === 'center') {
+    r = 1 - Math.cos(ratio * Math.PI)
+  } else if(opacityscale === 'min') {
+    r = 1 - ratio
+  } else if(opacityscale === 'max') {
+    r = ratio
+  }
+
+  return 0.2 + 0.8 * r;
+}
+
+function genColormap(param, opacityscale) {
   var colors = colormap({
       colormap: param
     , nshades:  256
@@ -156,7 +176,11 @@ function genColormap(param) {
     for(var j=0; j<3; ++j) {
       result[4*i+j] = c[j]
     }
-    result[4*i+3] = c[3]*255
+    if(!opacityscale) {
+      result[4*i+3] = 255 * c[3]
+    } else {
+      result[4*i+3] = 255 * mapOpacity(i / 255.0, opacityscale)
+    }
   }
 
   return ndarray(result, [256,256,4], [4,0,1])
@@ -242,6 +266,9 @@ proto.update = function(params) {
   if('opacity' in params) {
     this.opacity = params.opacity
   }
+  if('opacityscale' in params) {
+    this.opacityscale = params.opacityscale
+  }
   if('ambient' in params) {
     this.ambientLight  = params.ambient
   }
@@ -265,7 +292,7 @@ proto.update = function(params) {
     this.texture.shape = [256,256]
     this.texture.minFilter = gl.LINEAR_MIPMAP_LINEAR
     this.texture.magFilter = gl.LINEAR
-    this.texture.setPixels(genColormap(params.colormap))
+    this.texture.setPixels(genColormap(params.colormap, this.opacityscale))
     this.texture.generateMipmap()
   }
 
@@ -405,10 +432,17 @@ fill_loop:
         } else {
           c = meshColor
         }
-        if(c.length === 3) {
-          pCol.push(c[0], c[1], c[2], 1)
+        if(this.opacityscale && vertexIntensity) {
+          tCol.push(c[0], c[1], c[2],
+            this.opacity * mapOpacity(
+              (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
+              this.opacityscale
+            )
+          )
+        } else if(c.length === 3) {
+          pCol.push(c[0], c[1], c[2], this.opacity)
         } else {
-          pCol.push(c[0], c[1], c[2], c[3])
+          pCol.push(c[0], c[1], c[2], c[3] * this.opacity)
         }
 
         var uv
@@ -469,10 +503,17 @@ fill_loop:
           } else {
             c = meshColor
           }
-          if(c.length === 3) {
-            eCol.push(c[0], c[1], c[2], 1)
+          if(this.opacityscale && vertexIntensity) {
+            tCol.push(c[0], c[1], c[2],
+              this.opacity * mapOpacity(
+                (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
+                this.opacityscale
+              )
+            )
+          } else if(c.length === 3) {
+            eCol.push(c[0], c[1], c[2], this.opacity)
           } else {
-            eCol.push(c[0], c[1], c[2], c[3])
+            eCol.push(c[0], c[1], c[2], c[3] * this.opacity)
           }
 
           var uv
@@ -526,10 +567,18 @@ fill_loop:
           } else {
             c = meshColor
           }
-          if(c.length === 3) {
-            tCol.push(c[0], c[1], c[2], 1)
+
+          if(this.opacityscale && vertexIntensity) {
+            tCol.push(c[0], c[1], c[2],
+              this.opacity * mapOpacity(
+                (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
+                this.opacityscale
+              )
+            )
+          } else if(c.length === 3) {
+            tCol.push(c[0], c[1], c[2], this.opacity)
           } else {
-            tCol.push(c[0], c[1], c[2], c[3])
+            tCol.push(c[0], c[1], c[2], c[3] * this.opacity)
           }
 
           var uv
@@ -621,8 +670,6 @@ proto.drawTransparent = proto.draw = function(params) {
 
     eyePosition:   [0,0,0],
     lightPosition: [0,0,0],
-
-    opacity:  this.opacity,
 
     contourColor: this.contourColor,
 
