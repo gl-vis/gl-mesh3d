@@ -147,18 +147,16 @@ proto.setPickBase = function(id) {
 function mapOpacity(ratio, opacityscale) {
 
   var r
-  if(opacityscale === 'max') {
+  if(!opacityscale) {
+    r = 1
+  } else if(opacityscale === 'max') {
     r = ratio
   } else if(opacityscale === 'min') {
     r = 1 - ratio
   } else {
-    r = Math.sin(ratio * 0.5 * Math.PI)
+    r = 0.5 + 0.5 * (1 - Math.sin(ratio * Math.PI))
   }
-/*
-  if(r < 1 / 255.0) r = 1 / 255.0
-  else if(r > 1) r = 1
-  else if(r < 0) r = 0
-*/
+
   return r;
 }
 
@@ -432,9 +430,9 @@ fill_loop:
           c = meshColor
         }
         if(c.length === 3) {
-          pCol.push(c[0], c[1], c[2], 1)
+          pCol.push(c[0], c[1], c[2], this.opacity)
         } else {
-          pCol.push(c[0], c[1], c[2], c[3])
+          pCol.push(c[0], c[1], c[2], c[3] * this.opacity)
         }
 
         var uv
@@ -496,9 +494,9 @@ fill_loop:
             c = meshColor
           }
           if(c.length === 3) {
-            eCol.push(c[0], c[1], c[2], 1)
+            eCol.push(c[0], c[1], c[2], this.opacity)
           } else {
-            eCol.push(c[0], c[1], c[2], c[3])
+            eCol.push(c[0], c[1], c[2], c[3] * this.opacity)
           }
 
           var uv
@@ -561,9 +559,9 @@ fill_loop:
               )
             )
           } else if(c.length === 3) {
-            tCol.push(c[0], c[1], c[2], 1)
+            tCol.push(c[0], c[1], c[2], this.opacity)
           } else {
-            tCol.push(c[0], c[1], c[2], c[3])
+            tCol.push(c[0], c[1], c[2], c[3] * this.opacity)
           }
 
           var uv
