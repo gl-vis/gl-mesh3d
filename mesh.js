@@ -154,10 +154,10 @@ function mapOpacity(ratio, opacityscale) {
   } else if(opacityscale === 'min') {
     r = 1 - ratio
   } else {
-    r = 0.5 + 0.5 * (1 - Math.sin(ratio * Math.PI))
+    r = 1 - Math.sin(ratio * Math.PI)
   }
 
-  return r;
+  return 0.5 + 0.5 * r;
 }
 
 function genColormap(param, opacityscale) {
