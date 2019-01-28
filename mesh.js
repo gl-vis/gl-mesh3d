@@ -144,23 +144,21 @@ proto.setPickBase = function(id) {
   this.pickId = id
 }
 
-function mapOpacity(ratio, opacityscale) {
+function getOpacityFromScale(ratio, opacityscale) {
 
-  if(!opacityscale) return 1; // quick return;
+  if(!opacityscale) return 1
+  if(!opacityscale.length) return 1
 
-  var r = 1 // default: 'uniform'
-
-  if(opacityscale === 'extremes') {
-    r = 1 - Math.sin(ratio * Math.PI)
-  } else if(opacityscale === 'center') {
-    r = 1 - Math.cos(ratio * Math.PI)
-  } else if(opacityscale === 'min') {
-    r = 1 - ratio
-  } else if(opacityscale === 'max') {
-    r = ratio
+  for(var i = 0; i < opacityscale.length; ++i) {
+    if(opacityscale.length !== 2) return 1
+    if(opacityscale[i][0] === ratio) return opacityscale[i][1]
+    if(opacityscale[i][0] > ratio && i > 0) {
+      var d = (opacityscale[i][0] - ratio) / (opacityscale[i][0] - opacityscale[i - 1][0])
+      return opacityscale[i][1] * (1 - d) + d * opacityscale[i - 1][1]
+    }
   }
 
-  return 0.2 + 0.8 * r;
+  return 1
 }
 
 function genColormap(param, opacityscale) {
@@ -179,7 +177,7 @@ function genColormap(param, opacityscale) {
     if(!opacityscale) {
       result[4*i+3] = 255 * c[3]
     } else {
-      result[4*i+3] = 255 * mapOpacity(i / 255.0, opacityscale)
+      result[4*i+3] = 255 * getOpacityFromScale(i / 255.0, opacityscale)
     }
   }
 
@@ -434,7 +432,7 @@ fill_loop:
         }
         if(this.opacityscale && vertexIntensity) {
           tCol.push(c[0], c[1], c[2],
-            this.opacity * mapOpacity(
+            this.opacity * getOpacityFromScale(
               (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
               this.opacityscale
             )
@@ -505,7 +503,7 @@ fill_loop:
           }
           if(this.opacityscale && vertexIntensity) {
             tCol.push(c[0], c[1], c[2],
-              this.opacity * mapOpacity(
+              this.opacity * getOpacityFromScale(
                 (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
                 this.opacityscale
               )
@@ -570,7 +568,7 @@ fill_loop:
 
           if(this.opacityscale && vertexIntensity) {
             tCol.push(c[0], c[1], c[2],
-              this.opacity * mapOpacity(
+              this.opacity * getOpacityFromScale(
                 (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
                 this.opacityscale
               )
