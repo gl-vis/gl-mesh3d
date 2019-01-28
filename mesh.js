@@ -432,7 +432,14 @@ fill_loop:
         } else {
           c = meshColor
         }
-        if(c.length === 3) {
+        if(this.opacityscale && vertexIntensity) {
+          tCol.push(c[0], c[1], c[2],
+            this.opacity * mapOpacity(
+              (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
+              this.opacityscale
+            )
+          )
+        } else if(c.length === 3) {
           pCol.push(c[0], c[1], c[2], this.opacity)
         } else {
           pCol.push(c[0], c[1], c[2], c[3] * this.opacity)
@@ -496,7 +503,14 @@ fill_loop:
           } else {
             c = meshColor
           }
-          if(c.length === 3) {
+          if(this.opacityscale && vertexIntensity) {
+            tCol.push(c[0], c[1], c[2],
+              this.opacity * mapOpacity(
+                (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
+                this.opacityscale
+              )
+            )
+          } else if(c.length === 3) {
             eCol.push(c[0], c[1], c[2], this.opacity)
           } else {
             eCol.push(c[0], c[1], c[2], c[3] * this.opacity)

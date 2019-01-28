@@ -41,5 +41,5 @@ void main() {
   vec4 surfaceColor = f_color * texture2D(texture, f_uv);
   vec4 litColor = surfaceColor.a * vec4(diffuse * surfaceColor.rgb + kspecular * vec3(1,1,1) * specular,  1.0);
 
-  gl_FragColor = litColor * f_color.w;
+  gl_FragColor = litColor * f_color.a;
 }
