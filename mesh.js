@@ -160,7 +160,7 @@ function mapOpacity(ratio, opacityscale) {
     r = ratio
   }
 
-  return 0.5 + 0.5 * r;
+  return 0.2 + 0.8 * r;
 }
 
 function genColormap(param, opacityscale) {
