@@ -146,15 +146,18 @@ proto.setPickBase = function(id) {
 
 function mapOpacity(ratio, opacityscale) {
 
-  var r
-  if(!opacityscale) {
-    r = 1
-  } else if(opacityscale === 'max') {
-    r = ratio
+  if(!opacityscale) return 1; // quick return;
+
+  var r = 1 // default: 'uniform'
+
+  if(opacityscale === 'extremes') {
+    r = 1 - Math.sin(ratio * Math.PI)
+  } else if(opacityscale === 'center') {
+    r = 1 - Math.cos(ratio * Math.PI)
   } else if(opacityscale === 'min') {
     r = 1 - ratio
-  } else {
-    r = 1 - Math.sin(ratio * Math.PI)
+  } else if(opacityscale === 'max') {
+    r = ratio
   }
 
   return 0.5 + 0.5 * r;
