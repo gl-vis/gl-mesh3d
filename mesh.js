@@ -150,7 +150,7 @@ function getOpacityFromScale(ratio, opacityscale) {
   if(!opacityscale.length) return 1
 
   for(var i = 0; i < opacityscale.length; ++i) {
-    if(opacityscale.length !== 2) return 1
+    if(opacityscale.length < 2) return 1
     if(opacityscale[i][0] === ratio) return opacityscale[i][1]
     if(opacityscale[i][0] > ratio && i > 0) {
       var d = (opacityscale[i][0] - ratio) / (opacityscale[i][0] - opacityscale[i - 1][0])
