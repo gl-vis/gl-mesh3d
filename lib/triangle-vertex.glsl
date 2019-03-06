@@ -30,7 +30,7 @@ void main() {
   cameraCoordinate.xyz /= cameraCoordinate.w;
   f_lightDirection = lightPosition - cameraCoordinate.xyz;
   f_eyeDirection   = eyePosition - cameraCoordinate.xyz;
-  f_normal  = normalize((vec4(normal,0) * inverseModel).xyz);
+  f_normal  = normalize((vec4(normal, 0.0) * inverseModel).xyz);
 
   f_color          = color;
   f_data           = position;
