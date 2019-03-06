@@ -60,6 +60,7 @@ function SimplicialMesh(gl
   , contourVAO) {
 
   this.gl                = gl
+  this.pixelRatio         = 1
   this.cells             = []
   this.positions         = []
   this.intensity         = []
@@ -717,7 +718,7 @@ proto.drawTransparent = proto.draw = function(params) {
     shader.uniforms = uniforms
 
     this.edgeVAO.bind()
-    gl.lineWidth(this.lineWidth)
+    gl.lineWidth(this.lineWidth * this.pixelRatio)
     gl.drawArrays(gl.LINES, 0, this.edgeCount*2)
     this.edgeVAO.unbind()
   }
@@ -784,7 +785,7 @@ proto.drawPick = function(params) {
 
   if(this.edgeCount > 0) {
     this.edgeVAO.bind()
-    gl.lineWidth(this.lineWidth)
+    gl.lineWidth(this.lineWidth * this.pixelRatio)
     gl.drawArrays(gl.LINES, 0, this.edgeCount*2)
     this.edgeVAO.unbind()
   }
