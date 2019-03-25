@@ -1,6 +1,6 @@
 #extension GL_OES_standard_derivatives : enable
 
-precision mediump float;
+precision highp float;
 
 #pragma glslify: cookTorrance = require(glsl-specular-cook-torrance)
 //#pragma glslify: beckmann = require(glsl-specular-beckmann) // used in gl-surface3d
