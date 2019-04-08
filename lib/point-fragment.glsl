@@ -7,7 +7,7 @@ varying vec4 f_color;
 varying vec2 f_uv;
 
 void main() {
-  vec2 pointR = gl_PointCoord.xy - vec2(0.5,0.5);
+  vec2 pointR = gl_PointCoord.xy - vec2(0.5, 0.5);
   if(dot(pointR, pointR) > 0.25) {
     discard;
   }

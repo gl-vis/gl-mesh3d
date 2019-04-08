@@ -12,8 +12,7 @@ uniform float roughness
             , fresnel
             , kambient
             , kdiffuse
-            , kspecular
-            , opacity;
+            , kspecular;
 uniform sampler2D texture;
 
 varying vec3 f_normal
@@ -24,7 +23,9 @@ varying vec4 f_color;
 varying vec2 f_uv;
 
 void main() {
-  if (outOfRange(clipBounds[0], clipBounds[1], f_data)) discard;
+  if (f_color.a == 0.0 ||
+    outOfRange(clipBounds[0], clipBounds[1], f_data)
+  ) discard;
 
   vec3 N = normalize(f_normal);
   vec3 L = normalize(f_lightDirection);
@@ -39,8 +40,8 @@ void main() {
 
   float diffuse  = min(kambient + kdiffuse * max(dot(N, L), 0.0), 1.0);
 
-  vec4 surfaceColor = f_color * texture2D(texture, f_uv);
+  vec4 surfaceColor = vec4(f_color.rgb, 1.0) * texture2D(texture, f_uv);
   vec4 litColor = surfaceColor.a * vec4(diffuse * surfaceColor.rgb + kspecular * vec3(1,1,1) * specular,  1.0);
 
-  gl_FragColor = litColor * opacity;
+  gl_FragColor = litColor * f_color.a;
 }
