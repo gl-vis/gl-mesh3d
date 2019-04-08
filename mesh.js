@@ -120,7 +120,8 @@ function SimplicialMesh(gl
   this.roughness     = 0.5
   this.fresnel       = 1.5
 
-  this.opacity       = 1
+  this.opacity       = 1.0
+  this.hasAlpha      = false
   this.opacityscale  = false
 
   this._model       = IDENTITY
@@ -132,11 +133,11 @@ function SimplicialMesh(gl
 var proto = SimplicialMesh.prototype
 
 proto.isOpaque = function() {
-  return this.opacity >= 1
+  return !this.hasAlpha
 }
 
 proto.isTransparent = function() {
-  return !this.isOpaque();
+  return this.hasAlpha
 }
 
 proto.pickSlots = 1
@@ -262,12 +263,19 @@ proto.update = function(params) {
   if('lightPosition' in params) {
     this.lightPosition = params.lightPosition
   }
+
+  this.hasAlpha = false // default to no transparent draw
   if('opacity' in params) {
     this.opacity = params.opacity
+    if(this.opacity < 1) {
+      this.hasAlpha = true;
+    }
   }
   if('opacityscale' in params) {
     this.opacityscale = params.opacityscale
+    this.hasAlpha = true;
   }
+
   if('ambient' in params) {
     this.ambientLight  = params.ambient
   }
@@ -442,6 +450,7 @@ fill_loop:
           pCol.push(c[0], c[1], c[2], this.opacity)
         } else {
           pCol.push(c[0], c[1], c[2], c[3] * this.opacity)
+          if(!this.hasAlpha && c[3] < 1) this.hasAlpha = true
         }
 
         var uv
@@ -513,6 +522,7 @@ fill_loop:
             eCol.push(c[0], c[1], c[2], this.opacity)
           } else {
             eCol.push(c[0], c[1], c[2], c[3] * this.opacity)
+            if(!this.hasAlpha && c[3] < 1) this.hasAlpha = true
           }
 
           var uv
@@ -578,6 +588,7 @@ fill_loop:
             tCol.push(c[0], c[1], c[2], this.opacity)
           } else {
             tCol.push(c[0], c[1], c[2], c[3] * this.opacity)
+            if(!this.hasAlpha && c[3] < 1) this.hasAlpha = true
           }
 
           var uv
