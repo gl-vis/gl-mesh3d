@@ -450,7 +450,7 @@ fill_loop:
           pCol.push(c[0], c[1], c[2], this.opacity)
         } else {
           pCol.push(c[0], c[1], c[2], c[3] * this.opacity)
-          if(!this.hasAlpha && c[3] < 1) this.hasAlpha = true
+          if(c[3] < 1) this.hasAlpha = true
         }
 
         var uv
@@ -522,7 +522,7 @@ fill_loop:
             eCol.push(c[0], c[1], c[2], this.opacity)
           } else {
             eCol.push(c[0], c[1], c[2], c[3] * this.opacity)
-            if(!this.hasAlpha && c[3] < 1) this.hasAlpha = true
+            if(c[3] < 1) this.hasAlpha = true
           }
 
           var uv
@@ -577,7 +577,9 @@ fill_loop:
             c = meshColor
           }
 
-          if(this.opacityscale && vertexIntensity) {
+          if(!c) {
+            tCol.push(0,0,0,0)
+          } else if(this.opacityscale && vertexIntensity) {
             tCol.push(c[0], c[1], c[2],
               this.opacity * getOpacityFromScale(
                 (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo),
@@ -588,7 +590,7 @@ fill_loop:
             tCol.push(c[0], c[1], c[2], this.opacity)
           } else {
             tCol.push(c[0], c[1], c[2], c[3] * this.opacity)
-            if(!this.hasAlpha && c[3] < 1) this.hasAlpha = true
+            if(c[3] < 1) this.hasAlpha = true
           }
 
           var uv
