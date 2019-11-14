@@ -578,7 +578,7 @@ fill_loop:
           }
 
           if(!c) {
-            tCol.push(0,0,0,0)
+            tCol.push(0.5,0.5,0.5,1)
           } else if(this.opacityscale && vertexIntensity) {
             tCol.push(c[0], c[1], c[2],
               this.opacity * getOpacityFromScale(
