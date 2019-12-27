@@ -369,10 +369,15 @@ proto.update = function(params) {
         }
       }
     } else if(cellIntensity) {
-      for(var i=0; i<cellIntensity.length; ++i) {
-        var f = cellIntensity[i]
-        intensityLo = Math.min(intensityLo, f)
-        intensityHi = Math.max(intensityHi, f)
+      if(params.cellIntensityBounds) {
+        intensityLo = +params.cellIntensityBounds[0]
+        intensityHi = +params.cellIntensityBounds[1]
+      } else {
+        for(var i=0; i<cellIntensity.length; ++i) {
+          var f = cellIntensity[i]
+          intensityLo = Math.min(intensityLo, f)
+          intensityHi = Math.max(intensityHi, f)
+        }
       }
     } else {
       for(var i=0; i<positions.length; ++i) {
