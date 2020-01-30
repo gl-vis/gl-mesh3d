@@ -837,9 +837,12 @@ proto.pick = function(pickData) {
     simplex[i] = positions[cell[i]]
   }
 
+  var x = pickData.coord[0] * this.pixelRatio
+  var y = pickData.coord[1] * this.pixelRatio
+
   var data = closestPoint(
     simplex,
-    [pickData.coord[0], this._resolution[1]-pickData.coord[1]],
+    [x, this._resolution[1] - y],
     this._model,
     this._view,
     this._projection,
