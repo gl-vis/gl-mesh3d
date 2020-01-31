@@ -1,6 +1,6 @@
 {
   "name": "gl-mesh3d",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "3D mesh drawing",
   "main": "mesh.js",
   "directories": {
