@@ -105,6 +105,7 @@ function SimplicialMesh(gl
   this.contourColor      = [0,0,0]
   this.contourEnable     = true
 
+  this.pickVertex        = true;
   this.pickId            = 1
   this.bounds            = [
     [ Infinity, Infinity, Infinity],
@@ -184,21 +185,6 @@ function genColormap(param, opacityscale) {
   }
 
   return ndarray(result, [256,256,4], [4,0,1])
-}
-
-function unpackIntensity(cells, numVerts, cellIntensity) {
-  var result = new Array(numVerts)
-  for(var i=0; i<numVerts; ++i) {
-    result[i] = 0
-  }
-  var numCells = cells.length
-  for(var i=0; i<numCells; ++i) {
-    var c = cells[i]
-    for(var j=0; j<c.length; ++j) {
-      result[c[j]] = cellIntensity[i]
-    }
-  }
-  return result
 }
 
 function takeZComponent(array) {
@@ -391,10 +377,12 @@ proto.update = function(params) {
   if(vertexIntensity) {
     this.intensity = vertexIntensity
   } else if(cellIntensity) {
-    this.intensity = unpackIntensity(cells, positions.length, cellIntensity)
+    this.intensity = cellIntensity
   } else {
     this.intensity = takeZComponent(positions)
   }
+
+  this.pickVertex = !(cellIntensity || cellColors)
 
   //Point size
   var pointSizes      = params.pointSizes
@@ -837,12 +825,34 @@ proto.pick = function(pickData) {
     simplex[i] = positions[cell[i]]
   }
 
-  var x = pickData.coord[0] * this.pixelRatio
-  var y = pickData.coord[1] * this.pixelRatio
+  var x = pickData.coord[0];
+  var y = pickData.coord[1];
+
+  if(!this.pickVertex) {
+    var A = this.positions[cell[0]];
+    var B = this.positions[cell[1]];
+    var C = this.positions[cell[2]];
+
+    var dataCoordinate = [
+      (A[0] + B[0] + C[0]) / 3,
+      (A[1] + B[1] + C[1]) / 3,
+      (A[2] + B[2] + C[2]) / 3
+    ]
+
+    return {
+      _cellCenter : true,
+      position: [x, y],
+      index:    cellId,
+      cell:     cell,
+      cellId:   cellId,
+      intensity:  this.intensity[cellId],
+      dataCoordinate: dataCoordinate
+    }
+  }
 
   var data = closestPoint(
     simplex,
-    [x, this._resolution[1] - y],
+    [x * this.pixelRatio, this._resolution[1] - y * this.pixelRatio],
     this._model,
     this._view,
     this._projection,
