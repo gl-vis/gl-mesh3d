@@ -11,7 +11,7 @@ varying vec3 f_data;
 varying vec2 f_uv;
 
 void main() {
-  gl_Position = projection * view * model * vec4(position, 1.0);
+  gl_Position = projection * (view * (model * vec4(position, 1.0)));
   f_color = color;
   f_data  = position;
   f_uv    = uv;
